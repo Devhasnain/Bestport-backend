@@ -8,6 +8,7 @@ const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL inject
 const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
 const swaggerUi = require("swagger-ui-express");
+const morgan = require("morgan");
 const swaggerDocument = require("../swagger.json");
 const routes = require("./routes/index");
 const sendPushNotification = require("./utils/sendPushNotification");
@@ -18,7 +19,7 @@ const app = express();
 app.use(helmet()); // Set secure HTTP headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.disable('x-powered-by');
-
+app.use(morgan("dev"))
 // -------------------- Performance Middlewares --------------------
 app.use(compression()); // Compress all responses
 

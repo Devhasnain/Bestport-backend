@@ -14,7 +14,7 @@ const io = new Server(server, {
   },
 });
 
-server.listen(process.env.PORT);
+server.listen(process.env.PORT,'0.0.0.0');
 const onListening = async () => {
   console.log("server is up...");
   await connectDB();
