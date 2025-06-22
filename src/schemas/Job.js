@@ -2,8 +2,15 @@ const mongoose = require("mongoose");
 
 const jobSchema = new mongoose.Schema(
   {
+    service_type: { type: String, required: true },
     title: { type: String, required: true },
-    description: String,
+    description: { type: String, required: true },
+    preferred_date: { type: Date, required: true },
+    urgency: { type: String, required: true },
+    city: { type: String, required: true },
+    post_code: { type: String, required: true },
+    address: { type: String, required: true },
+    instructions: String,
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -19,10 +26,10 @@ const jobSchema = new mongoose.Schema(
       enum: ["pending", "assigned", "in-progress", "completed", "cancelled"],
       default: "pending",
     },
-    location: String,
-    reviewed: {
-      type: Boolean,
-      default: false,
+    review: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+      default: null,
     },
   },
   {

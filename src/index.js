@@ -11,24 +11,25 @@ const swaggerUi = require("swagger-ui-express");
 const morgan = require("morgan");
 const swaggerDocument = require("../swagger.json");
 const routes = require("./routes/index");
-const sendPushNotification = require("./utils/sendPushNotification");
 
 const app = express();
 
 // -------------------- Security Middlewares --------------------
 app.use(helmet()); // Set secure HTTP headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
-app.disable('x-powered-by');
-app.use(morgan("dev"))
+app.disable("x-powered-by");
+app.use(morgan("dev"));
 // -------------------- Performance Middlewares --------------------
 app.use(compression()); // Compress all responses
 
 // -------------------- CORS --------------------
-app.use(cors({
-  origin: "*", // Adjust to your allowed origins in production
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*", // Adjust to your allowed origins in production
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 
 // -------------------- Rate Limiting --------------------
 const limiter = rateLimit({
@@ -48,11 +49,11 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // -------------------- Health Check --------------------
 app.get("/health", (req, res) => {
-  sendPushNotification(
-    "fzw4jMTMRsuCBrmx2jRiqL:APA91bE493JbyXB9aX7SUkJOrkk9PHIpXUob0jSAHHWtupUmHdPY2CtHlUjlTrD4svaK9-7vElTEZB86g6VkhHzMSHCnOKEB438b53MKnq4u2VQGWP51PXQ",
-    "Test notification",
-    "Testing notifications sending and receiving."
-  )
+  // sendPushNotification(
+  //   "fzw4jMTMRsuCBrmx2jRiqL:APA91bE493JbyXB9aX7SUkJOrkk9PHIpXUob0jSAHHWtupUmHdPY2CtHlUjlTrD4svaK9-7vElTEZB86g6VkhHzMSHCnOKEB438b53MKnq4u2VQGWP51PXQ",
+  //   "Test notification",
+  //   "Testing notifications sending and receiving."
+  // )
   res.send({ status: "OK" });
 });
 

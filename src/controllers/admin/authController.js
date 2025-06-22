@@ -1,39 +1,16 @@
-const { User } = require("../schemas");
+const { User } = require("../../schemas");
 const {
   sendSuccess,
   matchPassword,
   generateToken,
   sendError,
-} = require("../utils");
-const { sendAdminPushNotification } = require("../utils/sendPushNotification");
+} = require("../../utils");
 
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    const user = new User({ name, email, password });
-    await user.save();
-
-    const token = generateToken(user);
-    sendAdminPushNotification('Registeration',`${user?.name} created account on bestport.`)
-    
-    return sendSuccess(
-      res,
-      "User registered successfully",
-      {
-        token,
-      },
-      201
-    );
-  } catch (err) {
-    return sendError(res, err.message);
-  }
-};
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, role:"admin"});
     if (!user) throw new Error("Invalid credentials");
 
     const match = await matchPassword(password, user.password);
