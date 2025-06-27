@@ -8,7 +8,10 @@ const {
   getCustomers,
   getUserById,
 } = require("../controllers/admin/userController");
-const { getAllJobs } = require("../controllers/admin/jobController");
+const {
+  getAllJobs,
+  getJobById,
+} = require("../controllers/admin/jobController");
 const router = express.Router();
 
 router.post("/login", loginDto, dtoValidator, login);
@@ -19,5 +22,6 @@ router.get("/customers", authMiddleware, getCustomers);
 router.get("/user/:id", authMiddleware, getUserById);
 
 router.get("/jobs", authMiddleware, getAllJobs);
+router.get("/jobs/:id", authMiddleware, getJobById);
 
 module.exports = router;
