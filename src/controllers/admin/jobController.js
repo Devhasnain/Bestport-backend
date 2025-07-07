@@ -1,6 +1,7 @@
 const {
   getAllJobsService,
   getJobService,
+  createTicketService,
 } = require("../../services/jobService");
 const { sendSuccess, sendError } = require("../../utils");
 
@@ -26,6 +27,22 @@ exports.getJobById = async (req, res) => {
     const job = await getJobService(id);
 
     sendSuccess(res, "", job, 200);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.createJobTicket = async (req, res) => {
+  try {
+    const { user, job } = req.params;
+    const { instructions } = req.body;
+    const ticket = await createTicketService({
+      user,
+      job,
+      instructions,
+    });
+
+    sendSuccess(res, "", ticket, 200);
   } catch (err) {
     return sendError(res, err.message);
   }

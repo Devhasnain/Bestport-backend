@@ -11,6 +11,7 @@ const {
 const {
   getAllJobs,
   getJobById,
+  createJobTicket,
 } = require("../controllers/admin/jobController");
 const router = express.Router();
 
@@ -23,5 +24,7 @@ router.get("/user/:id", authMiddleware, getUserById);
 
 router.get("/jobs", authMiddleware, getAllJobs);
 router.get("/jobs/:id", authMiddleware, getJobById);
+
+router.post("/create-job-ticket", authMiddleware, createJobTicket);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { Job } = require("../schemas");
+const { Job, Ticket } = require("../schemas");
 
 const getJobsService = async (userId) => {
   return await Job.find({ customer: userId })
@@ -71,9 +71,18 @@ const getAllJobsService = async ({ status, page, limit }) => {
   return { jobs, total };
 };
 
+const createTicketService = async ({ user, job, instructions }) => {
+  return (await Ticket.create({ user, job, instructions })).populate({
+    path: "user",
+    select: ["_id", "name", "profile_img"],
+  });
+};
+
 module.exports = {
   getJobsService,
   createJobService,
   getJobService,
-  getAllJobsService
+  getAllJobsService,
+  createJobService,
+  createTicketService
 };

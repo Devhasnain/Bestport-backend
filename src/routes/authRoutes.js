@@ -5,15 +5,35 @@ const {
   profile,
   setFcm,
   getFcm,
+  googleLogin,
+  editProfile,
+  updatePassword,
 } = require("../controllers/authController");
-const { registerDto, loginDto } = require("../validators/auth");
+const {
+  registerDto,
+  loginDto,
+  googleAuthDto,
+  editEmailDto,
+  editNameDto,
+  editPasswordDto,
+} = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = Router();
 
 router.post("/register", registerDto, dtoValidator, register);
 router.post("/login", loginDto, dtoValidator, login);
+router.post("/google-auth", googleAuthDto, dtoValidator, googleLogin);
 router.get("/me", authMiddleware, profile);
+router.put("/edit-name", authMiddleware, editNameDto, dtoValidator, editProfile);
+router.put("/edit-email", authMiddleware, editEmailDto, dtoValidator, editProfile);
+router.put(
+  "/edit-password",
+  authMiddleware,
+  editPasswordDto,
+  dtoValidator,
+  updatePassword
+);
 router.put("/set-fcm/:fcm", authMiddleware, setFcm);
 router.get("/fcm", authMiddleware, getFcm);
 

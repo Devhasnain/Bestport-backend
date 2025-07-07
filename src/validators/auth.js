@@ -1,6 +1,19 @@
 const { body } = require("express-validator");
 const { User } = require("../schemas");
 
+const passwordDto = body("password")
+  .trim()
+  .notEmpty()
+  .withMessage("Password is required")
+  .isLength({ min: 6 })
+  .withMessage("Password must be at least 6 characters")
+  .matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]+$/
+  )
+  .withMessage(
+    "Password must include uppercase, lowercase, number, and special character"
+  );
+
 const registerDto = [
   body("name")
     .trim()
@@ -23,17 +36,7 @@ const registerDto = [
       }
       return true;
     }),
-
-  body("password")
-    .trim()
-    .notEmpty()
-    .withMessage("Password is required")
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]+$/)
-    .withMessage(
-      "Password must include uppercase, lowercase, number, and special character"
-    ),
+  passwordDto,
 ];
 
 const loginDto = [
@@ -45,21 +48,84 @@ const loginDto = [
     .withMessage("Email must be valid")
     .normalizeEmail(),
 
-  body("password")
+  passwordDto,
+];
+
+const googleAuthDto = [
+  body("email")
     .trim()
     .notEmpty()
-    .withMessage("Password is required")
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail(),
+
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2 })
+    .withMessage("Name must be at least 2 characters"),
+];
+
+const editEmailDto = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail()
+    .custom(async (value) => {
+      const user = await User.findOne({ email: value });
+      if (user) {
+        throw new Error("Email is already in use");
+      }
+      return true;
+    }),
+];
+
+const editNameDto = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 3 })
+    .withMessage("Name must be at least 3 characters"),
+];
+
+const editPasswordDto = [
+  body("currentPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("Current password is required")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters")
+    .withMessage("Current password must be at least 6 characters")
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]+$/
     )
     .withMessage(
-      "Password must include uppercase, lowercase, number, and special character"
+      "Current password must include uppercase, lowercase, number, and special character"
+    ),
+  body("newPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]+$/
+    )
+    .withMessage(
+      "New password must include uppercase, lowercase, number, and special character"
     ),
 ];
 
 module.exports = {
   registerDto,
-  loginDto
+  loginDto,
+  googleAuthDto,
+  editNameDto,
+  editEmailDto,
+  editPasswordDto
 };

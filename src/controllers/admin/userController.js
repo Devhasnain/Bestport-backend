@@ -3,7 +3,7 @@ const { sendError, sendSuccess } = require("../../utils");
 
 exports.getEmployees = async (req, res) => {
   try {
-    const employees = await User.find({ role: "employee" });
+    const employees = await User.find({ role: "employee" }).select(['-password']);
     return sendSuccess(res, "", employees, 201);
   } catch (err) {
     return sendError(res, err.message);
@@ -12,7 +12,7 @@ exports.getEmployees = async (req, res) => {
 
 exports.getCustomers = async (req, res) => {
   try {
-    const customers = await User.find({ role: "customer" });
+    const customers = await User.find({ role: "customer" }).select(['-password']);
     return sendSuccess(res, "", customers, 201);
   } catch (err) {
     return sendError(res, err.message);
