@@ -23,7 +23,11 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Review",
     },
-    fcm_token:{type:String,default:null}
+    fcm_token: { type: String, default: null },
+    is_available: {
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );

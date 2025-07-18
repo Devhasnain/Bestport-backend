@@ -13,6 +13,11 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["assigned", "accepted", "expired", "rejected"],
+      default: "assigned",
+    },
   },
   {
     timestamps: true,

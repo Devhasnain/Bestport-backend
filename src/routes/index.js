@@ -5,11 +5,13 @@ const { sendPushNotification } = require("../utils/sendPushNotification");
 const adminRoutes = require("./adminRoutes");
 const authRoutes = require("./authRoutes");
 const jobRoutes = require("./jobRoutes");
+const jobTicketRoutes = require("./jobTicket");
 
 router.use(checkAccessKey);
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
 router.use("/job", jobRoutes);
+router.use("/ticket", jobTicketRoutes);
 
 router.get("/noti/:id", async (req, res) => {
   try {

@@ -7,9 +7,7 @@ const rateLimit = require("express-rate-limit"); // Prevent brute-force
 const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL injection
 const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
-const swaggerUi = require("swagger-ui-express");
 const morgan = require("morgan");
-const swaggerDocument = require("../swagger.json");
 const routes = require("./routes/index");
 
 const app = express();
@@ -43,9 +41,6 @@ app.use(limiter);
 // -------------------- Body Parsing --------------------
 app.use(bodyParser.urlencoded({ extended: true, limit: "30mb" }));
 app.use(bodyParser.json({ limit: "30mb" }));
-
-// -------------------- Swagger Docs --------------------
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // -------------------- Health Check --------------------
 app.get("/health", (req, res) => {
