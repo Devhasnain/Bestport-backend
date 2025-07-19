@@ -1,6 +1,0 @@
-[build]
-# If you had a build step like "npm run build", define it here
-# command = "npm run build"
-
-[start]
-command = "node server.js"
