@@ -121,11 +121,72 @@ const editPasswordDto = [
     ),
 ];
 
+const sendOtpEmailDtp = [
+    body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail()
+    .custom(async (value) => {
+      const user = await User.findOne({ email: value });
+      if (!user) {
+        throw new Error("Email is not registered");
+      }
+      return true;
+    }),
+];
+
+const verifyEmailOtpDto = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail(),
+
+  body("otp")
+    .trim()
+    .notEmpty()
+    .withMessage("OTP is required")
+    .isLength({ min: 5, max: 5 })
+    .withMessage("OTP must be exactly 5 digits")
+    .isNumeric()
+    .withMessage("OTP must be a number"),
+];
+
+const setNewPasswordDto = [
+  body("token")
+    .trim()
+    .notEmpty()
+    .withMessage("Reset password token is required")
+    .isLength({ min: 18 })
+    .withMessage("Invalid reset password token"),
+
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]+$/
+    )
+    .withMessage(
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
+];
+
 module.exports = {
   registerDto,
   loginDto,
   googleAuthDto,
   editNameDto,
   editEmailDto,
-  editPasswordDto
+  editPasswordDto,
+  sendOtpEmailDtp,
+  verifyEmailOtpDto,
+  setNewPasswordDto
 };

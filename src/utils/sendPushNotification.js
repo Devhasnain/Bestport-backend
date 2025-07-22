@@ -11,6 +11,7 @@ const sendPushNotification = async (fcmToken, title, body, data = {}) => {
   };
 
   try {
+    console.log(admin.app())
     await admin.messaging().send(message);
   } catch (error) {
     console.error("Error sending notification:", error);

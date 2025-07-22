@@ -9,6 +9,7 @@ const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
 const morgan = require("morgan");
 const routes = require("./routes/index");
+const { sendPushNotification } = require("./utils/sendPushNotification");
 
 const app = express();
 
@@ -44,11 +45,11 @@ app.use(bodyParser.json({ limit: "30mb" }));
 
 // -------------------- Health Check --------------------
 app.get("/health", (req, res) => {
-  // sendPushNotification(
-  //   "fzw4jMTMRsuCBrmx2jRiqL:APA91bE493JbyXB9aX7SUkJOrkk9PHIpXUob0jSAHHWtupUmHdPY2CtHlUjlTrD4svaK9-7vElTEZB86g6VkhHzMSHCnOKEB438b53MKnq4u2VQGWP51PXQ",
-  //   "Test notification",
-  //   "Testing notifications sending and receiving."
-  // )
+  sendPushNotification(
+    "eyplkQ52TYypn_f66fztJT:APA91bE26YvIkqjcw6h8dvMi8MqdoJ17IUrM1UG3biGxi37MOju1WE_siXtkBrWhocJnG_p3b39oqmdMkNxkamq_rErIocqMqiBHgvXyFwnYkC9ei3agbdg",
+    "Test notification",
+    "Testing notifications sending and receiving."
+  )
   res.send({ status: "OK" });
 });
 

@@ -8,6 +8,9 @@ const {
   googleLogin,
   editProfile,
   updatePassword,
+  sendEmailOtp,
+  verifyEmailOtp,
+  setNewPassword,
 } = require("../controllers/authController");
 const {
   registerDto,
@@ -16,6 +19,9 @@ const {
   editEmailDto,
   editNameDto,
   editPasswordDto,
+  sendOtpEmailDtp,
+  verifyEmailOtpDto,
+  setNewPasswordDto,
 } = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -36,5 +42,10 @@ router.put(
 );
 router.put("/set-fcm/:fcm", authMiddleware, setFcm);
 router.get("/fcm", authMiddleware, getFcm);
+
+router.post("/send-otp",  sendOtpEmailDtp, dtoValidator, sendEmailOtp);
+router.post("/verify-otp",  verifyEmailOtpDto, dtoValidator, verifyEmailOtp);
+router.post("/set-new-password",  setNewPasswordDto, dtoValidator, setNewPassword);
+
 
 module.exports = router;

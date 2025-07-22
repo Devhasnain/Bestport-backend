@@ -1,6 +1,7 @@
 const generateToken = require("./generateToken");
 const { hashPassword, matchPassword } = require("./bcrypt");
 const { sendError, sendSuccess } = require("./responseHandler");
+const generateOtp = require("./generateOtp");
 
 module.exports = {
   generateToken,
@@ -8,4 +9,5 @@ module.exports = {
   matchPassword,
   sendError,
   sendSuccess,
+  generateOtp
 };

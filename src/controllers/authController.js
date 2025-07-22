@@ -1,4 +1,4 @@
-const { User } = require("../schemas");
+const { User, Otp } = require("../schemas");
 const { editUserService } = require("../services/userService");
 const {
   sendSuccess,
@@ -6,8 +6,12 @@ const {
   generateToken,
   sendError,
   hashPassword,
+  generateOtp,
 } = require("../utils");
+const { sendMail } = require("../utils/sendMail");
 const { sendAdminPushNotification } = require("../utils/sendPushNotification");
+const JWT = require("jsonwebtoken");
+require("dotenv").config();
 
 exports.register = async (req, res) => {
   try {
@@ -166,6 +170,71 @@ exports.setFcm = async (req, res) => {
 exports.getFcm = async (req, res) => {
   try {
     return sendSuccess(res, "", req.user.fcm_token, 201);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.sendEmailOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    await Otp.deleteMany({ email });
+
+    const otp = generateOtp();
+    const hashedOtp = await hashPassword(otp);
+
+    await Otp.create({ email, otp: hashedOtp });
+    await sendMail({
+      email,
+      subject: "Your forget password otp",
+      payload: otp,
+      template: "otp",
+    });
+
+    return sendSuccess(res, "Otp send successfully", {}, 201);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.verifyEmailOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const record = await Otp.findOne({ email });
+    if (!record) {
+      throw new Error("OTP expired or invalid");
+    }
+
+    const isValid = await matchPassword(otp, record.otp);
+    if (!isValid) {
+      throw new Error("Invalid OTP");
+    }
+    await Otp.deleteMany({ email });
+    const user = await User.findOne({ email });
+    console.log(user)
+    const token = generateToken(user);
+
+    return sendSuccess(res, "Otp verified successfully", { token }, 201);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.setNewPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    const decoded = JWT.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    user.password = password;
+    await user.save();
+
+    return sendSuccess(res, "Password changed successfully", {}, 201);
   } catch (err) {
     return sendError(res, err.message);
   }
