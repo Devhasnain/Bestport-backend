@@ -84,48 +84,83 @@ exports.getJobTickets = async (req, res) => {
 exports.getAllJobTickets = async (req, res) => {
   try {
     let query = {};
-    if(req?.query?.status?.trim()?.length){
-        query.status = req?.query?.status
+    if (req?.query?.status?.trim()?.length) {
+      query.status = req?.query?.status;
+    }
+    if (req?.query?.user) {
+      query.user = req?.query?.user;
+    }
+    if (req?.query?.active === "true") {
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+      query.createdAt = { $gte: fifteenMinutesAgo };
     }
     const tickets = await Ticket.find(query).populate([
-        {
-            path:"user",
-            select:['name','_id','profile_img']
-        },
-        {
-            path:'job'
-        }
+      {
+        path: "user",
+        select: ["name", "_id", "profile_img"],
+      },
+      {
+        path: "job",
+      },
     ]);
     return sendSuccess(
       res,
       "",
       {
-        tickets
+        tickets,
       },
       201
     );
   } catch (err) {
-    console.log(err)
+    console.log(err);
     return sendError(res, err.message);
   }
 };
 
 exports.deleteJobTicket = async (req, res) => {
   try {
-    if(!req.params?.id){
-        throw new Error("Ticket id is required")
+    if (!req.params?.id) {
+      throw new Error("Ticket id is required");
     }
     await Ticket.findByIdAndDelete(req.params.id);
-    return sendSuccess(
-      res,
-      "",
-      {
-        
-      },
-      201
-    );
+    return sendSuccess(res, "", {}, 201);
   } catch (err) {
-    console.log(err)
+    return sendError(res, err.message);
+  }
+};
+
+exports.isTicketAvailable = async (req, res) => {
+  try {
+    const { job } = req.query;
+    if (!job) {
+      throw new Error("Job id is required");
+    }
+    const user = req.user;
+    const ticket = await Ticket.findOne({ job, user: user?._id });
+    return sendSuccess(res, "", { ticket }, 201);
+  } catch (error) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.acceptJobTicket = async (req, res) => {
+  try {
+    const { ticketId } = req.query;
+    if (!ticketId) {
+      throw new Error("Ticket id is required");
+    }
+    const ticket = await Ticket.findById(ticketId);
+
+    await Job.findByIdAndUpdate(ticket.job, {
+      status: "in-progress",
+      assigned_to: req.user?._id,
+    });
+
+    ticket.status = "accepted";
+    await ticket.save();
+
+    return sendSuccess(res, "Job has started", { }, 201);
+  } catch (error) {
     return sendError(res, err.message);
   }
 };
