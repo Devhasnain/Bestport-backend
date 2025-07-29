@@ -6,12 +6,14 @@ const adminRoutes = require("./adminRoutes");
 const authRoutes = require("./authRoutes");
 const jobRoutes = require("./jobRoutes");
 const jobTicketRoutes = require("./jobTicket");
+const notificationRoutes = require("./notificationRoutes");
 
 router.use(checkAccessKey);
 router.use("/auth", authRoutes);
 router.use("/admin", adminRoutes);
 router.use("/job", jobRoutes);
 router.use("/ticket", jobTicketRoutes);
+router.use("/notification", notificationRoutes);
 
 router.get("/noti/:id", async (req, res) => {
   try {

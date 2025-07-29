@@ -1,17 +1,23 @@
 const admin = require("../config/firebase");
-const { User } = require("../schemas");
-const sendPushNotification = async (fcmToken, title, body, data = {}) => {
+const { User, Notification } = require("../schemas");
+const sendPushNotification = async (user, title, body, data = {}) => {
   const message = {
     notification: {
       title,
       body,
     },
-    data,
-    token: fcmToken,
+    data: data,
+    token: user?.device?.fcm_token,
   };
 
   try {
-    console.log(admin.app())
+    await Notification.create({
+      recipient: user?._id,
+      title,
+      description: body,
+      image: data?.image ?? "",
+      redirect: data?.redirect ?? "",
+    });
     await admin.messaging().send(message);
   } catch (error) {
     console.error("Error sending notification:", error);
@@ -19,18 +25,28 @@ const sendPushNotification = async (fcmToken, title, body, data = {}) => {
 };
 
 const sendAdminPushNotification = async (title, body, data = {}) => {
-  const user = await User.findById("685578e00bd18789241c18ff");
-  const message = {
-    notification: {
-      title,
-      body,
-    },
-    data,
-    token: user?.fcm_token,
-  };
+  const admins = await User.find({ role: "admin" });
 
   try {
-    await admin.messaging().send(message);
+    admins?.forEach(async (user) => {
+      const message = {
+        notification: {
+          title,
+          body,
+        },
+        data: data,
+
+        token: user?.device?.fcm_token,
+      };
+      await Notification.create({
+        recipient: user?._id,
+        title,
+        description: body,
+        image: data?.image ?? "",
+        redirect: data?.redirect,
+      });
+      await admin.messaging().send(message);
+    });
   } catch (error) {
     console.error("Error sending notification:", error);
   }

@@ -31,6 +31,7 @@ const jobSchema = new mongoose.Schema(
       ref: "Review",
       default: null,
     },
+    assigned_candidates:[{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
   {
     timestamps: true,

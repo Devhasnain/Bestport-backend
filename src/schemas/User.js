@@ -23,7 +23,16 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Review",
     },
-    fcm_token: { type: String, default: null },
+    device:{
+      fcm_token:{ type: String, default: null },
+      device_id:{type:String},
+      app_version:{type:String},
+      os_version:{type:String},
+      device_type:{type:String},
+      brand:{type:String},
+      device_name:{type:String},
+      ip_address:{type:String}
+    },
     is_available: {
       type: Boolean,
       default: false,

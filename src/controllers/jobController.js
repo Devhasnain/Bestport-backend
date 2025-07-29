@@ -1,16 +1,42 @@
 const { Job } = require("../schemas");
-const { getJobsService, createJobService, getJobService } = require("../services/jobService");
+const {
+  getJobsService,
+  createJobService,
+  getJobService,
+} = require("../services/jobService");
 const { sendError, sendSuccess } = require("../utils");
-const { sendAdminPushNotification } = require("../utils/sendPushNotification");
+const {
+  sendAdminPushNotification,
+  sendPushNotification,
+} = require("../utils/sendPushNotification");
 
 exports.createJob = async (req, res) => {
   try {
-    const job = await createJobService({ ...req.body, customer: req.user._id });
+    const user = req.user;
+    const job = await createJobService({ ...req.body, customer: user._id });
     sendSuccess(res, "Job has been submitted successfully.", job, 200);
+
+    sendPushNotification(
+      user,
+      `Job Submitted Successfully!`,
+      `Hi ${user?.name}, your job has been submitted to the admin. An employee will be assigned shortly and will reach out to you soon.`,
+      {
+        "image": user?.profile_img ?? "",
+        "redirect": `JobDetail_${job?._id}`,
+      }
+    );
+
+    // sendAdminPushNotification(
+    //   "New Job Submitted",
+    //   `${user?.name} just submitted a new job on BestPort.`,
+    //   {
+    //     "image": user?.profile_img ?? "",
+    //     "redirect": `job/${job?._id}`,
+    //   }
+    // );
+
   } catch (err) {
     return sendError(res, err.message);
-  } finally {
-    sendAdminPushNotification('New job',`${req?.user?.name} has submitted a new job.`)
   }
 };
 

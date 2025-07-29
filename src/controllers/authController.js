@@ -9,7 +9,10 @@ const {
   generateOtp,
 } = require("../utils");
 const { sendMail } = require("../utils/sendMail");
-const { sendAdminPushNotification } = require("../utils/sendPushNotification");
+const {
+  sendAdminPushNotification,
+  sendPushNotification,
+} = require("../utils/sendPushNotification");
 const JWT = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -17,22 +20,36 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const user = new User({ name, email, password });
-    await user.save();
+    const user = await User.create({ name, email, password });
 
     const token = generateToken(user);
-    sendAdminPushNotification(
-      "Registeration",
-      `${user?.name} created account on bestport.`
-    );
 
-    return sendSuccess(
+    sendSuccess(
       res,
       "User registered successfully",
       {
         token,
       },
       201
+    );
+
+    sendAdminPushNotification(
+      "New Registeration",
+      `New user ${user?.name} just signed up on Bestport.`,
+      {
+        image: user?.profile_img,
+        redirect: `user/${user?._id}`,
+      }
+    );
+
+    sendPushNotification(
+      user,
+      `${user?.name} welcome to Bestport!`,
+      `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
+      {
+        image: user?.profile_img,
+        redirect: "CreateJob",
+      }
     );
   } catch (err) {
     return sendError(res, err.message);
@@ -56,21 +73,39 @@ exports.googleLogin = async (req, res) => {
         201
       );
     } else {
-      const user = new User({
+      const user = await User.create({
         profile_img,
         name,
         email,
         password: `new-google-user-${name}`,
       });
-      await user.save();
       const token = generateToken(user);
-      return sendSuccess(
+      sendSuccess(
         res,
         "User registered successfully",
         {
           token,
         },
         201
+      );
+
+      sendAdminPushNotification(
+        "New Registeration",
+        `New user ${user?.name} just signed up on Bestport.`,
+        {
+          image: user?.profile_img,
+          redirect: `user/${user?._id}`,
+        }
+      );
+
+      sendPushNotification(
+        user,
+        `${user?.name} welcome to Bestport!`,
+        `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
+        {
+          image: user?.profile_img,
+          redirect: "CreateJob",
+        }
       );
     }
   } catch (error) {
@@ -155,12 +190,10 @@ exports.updatePassword = async (req, res) => {
   }
 };
 
-exports.setFcm = async (req, res) => {
+exports.registerDevice = async (req, res) => {
   try {
     const userId = req.user?._id;
-    const { fcm } = req.params;
-    if (!fcm?.trim()?.length) throw new Error("Fcm token is required.");
-    await User.findByIdAndUpdate(userId, { fcm_token: fcm });
+    await User.findByIdAndUpdate(userId, { device: req.body });
     return sendSuccess(res, "", {}, 201);
   } catch (err) {
     return sendError(res, err.message);
@@ -211,7 +244,7 @@ exports.verifyEmailOtp = async (req, res) => {
     }
     await Otp.deleteMany({ email });
     const user = await User.findOne({ email });
-    console.log(user)
+    console.log(user);
     const token = generateToken(user);
 
     return sendSuccess(res, "Otp verified successfully", { token }, 201);

@@ -1,6 +1,10 @@
 const { JobStatus, JobTicketStatus } = require("../config/constants");
 const { User, Ticket, Job } = require("../schemas");
 const { sendSuccess, sendError } = require("../utils");
+const {
+  sendAdminPushNotification,
+  sendPushNotification,
+} = require("../utils/sendPushNotification");
 
 exports.createJobTicket = async (req, res) => {
   try {
@@ -151,15 +155,38 @@ exports.acceptJobTicket = async (req, res) => {
     }
     const ticket = await Ticket.findById(ticketId);
 
-    await Job.findByIdAndUpdate(ticket.job, {
+    const user = req.user;
+
+    const job = await Job.findByIdAndUpdate(ticket.job, {
       status: "in-progress",
-      assigned_to: req.user?._id,
+      assigned_to: user?._id,
+    }).populate({
+      path: "customer",
     });
 
     ticket.status = "accepted";
     await ticket.save();
 
-    return sendSuccess(res, "Job has started", { }, 201);
+    sendSuccess(res, "Job has started", {}, 201);
+
+    sendAdminPushNotification(
+      "Job In Progress",
+      `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
+      {
+        image: user?.profile_img,
+        redirect: `job/${job?._id}`,
+      }
+    );
+
+    sendPushNotification(
+      job?.customer,
+      `Your Job is Now in Progress`,
+      `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
+      {
+        image: user?.profile_img,
+        redirect: `JobDetail_${job?._id}`,
+      }
+    );
   } catch (error) {
     return sendError(res, err.message);
   }

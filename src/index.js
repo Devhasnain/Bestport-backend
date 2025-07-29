@@ -45,11 +45,11 @@ app.use(bodyParser.json({ limit: "30mb" }));
 
 // -------------------- Health Check --------------------
 app.get("/health", (req, res) => {
-  sendPushNotification(
-    "eyplkQ52TYypn_f66fztJT:APA91bE26YvIkqjcw6h8dvMi8MqdoJ17IUrM1UG3biGxi37MOju1WE_siXtkBrWhocJnG_p3b39oqmdMkNxkamq_rErIocqMqiBHgvXyFwnYkC9ei3agbdg",
-    "Test notification",
-    "Testing notifications sending and receiving."
-  )
+  // sendPushNotification(
+  //   "eyplkQ52TYypn_f66fztJT:APA91bE26YvIkqjcw6h8dvMi8MqdoJ17IUrM1UG3biGxi37MOju1WE_siXtkBrWhocJnG_p3b39oqmdMkNxkamq_rErIocqMqiBHgvXyFwnYkC9ei3agbdg",
+  //   "Test notification",
+  //   "Testing notifications sending and receiving."
+  // )
   res.send({ status: "OK" });
 });
 
