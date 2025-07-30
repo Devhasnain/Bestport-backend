@@ -7,6 +7,7 @@ const authRoutes = require("./authRoutes");
 const jobRoutes = require("./jobRoutes");
 const jobTicketRoutes = require("./jobTicket");
 const notificationRoutes = require("./notificationRoutes");
+const productsRoutes = require("./productRoutes");
 
 router.use(checkAccessKey);
 router.use("/auth", authRoutes);
@@ -14,6 +15,8 @@ router.use("/admin", adminRoutes);
 router.use("/job", jobRoutes);
 router.use("/ticket", jobTicketRoutes);
 router.use("/notification", notificationRoutes);
+router.use("/product", productsRoutes);
+
 
 router.get("/noti/:id", async (req, res) => {
   try {

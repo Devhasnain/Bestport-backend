@@ -1,7 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
-const config = require("../config");
 require("dotenv").config();
 
 cloudinary.config({
@@ -24,5 +23,6 @@ const ProductsImageUploader = multer({ storage: ProductsImageStorage }).single(
 );
 
 module.exports = {
-    ProductsImageUploader
+    ProductsImageUploader,
+    cloudinary
 }

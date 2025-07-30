@@ -48,7 +48,7 @@ exports.createJobTicket = async (req, res) => {
       throw new Error("Job is not available, Already completed or closed");
     }
 
-    job.assigned_to.push(user);
+    job.assigned_candidates.push(user);
     await job.save();
 
     const ticket = await (
