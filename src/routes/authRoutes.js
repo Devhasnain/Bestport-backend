@@ -3,7 +3,6 @@ const {
   register,
   login,
   profile,
-  setFcm,
   getFcm,
   googleLogin,
   editProfile,
@@ -11,6 +10,7 @@ const {
   sendEmailOtp,
   verifyEmailOtp,
   setNewPassword,
+  registerDevice,
 } = require("../controllers/authController");
 const {
   registerDto,
@@ -40,7 +40,7 @@ router.put(
   dtoValidator,
   updatePassword
 );
-router.put("/set-fcm/:fcm", authMiddleware, setFcm);
+router.put("/register-device", authMiddleware, registerDevice);
 router.get("/fcm", authMiddleware, getFcm);
 
 router.post("/send-otp",  sendOtpEmailDtp, dtoValidator, sendEmailOtp);
