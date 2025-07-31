@@ -5,8 +5,11 @@ const { cloudinary } = require("../config/multer");
 exports.createProduct = async (req, res) => {
   try {
     let file = req.file;
+    if(!file){
+      throw new Error("Product image is required.")
+    }
     const product = await Product.create({ ...req.body, image: file });
-    sendSuccess(res, "New product created successfully.", product, 200);
+    sendSuccess(res, "New product created successfully.", {product}, 200);
   } catch (error) {
     return sendError(res, err.message);
   }
@@ -33,13 +36,20 @@ exports.editProduct = async (req, res) => {
       throw new Error("Product id is required");
     }
     const product = await Product.findById(id);
-    if (file) product.image = file;
 
-    let updatedProduct = await product.save();
+    if (file) {
+      await cloudinary.api.delete_resources([product?.image?.filename], {
+        resource_type: "image",
+        type: "upload",
+      });
+      product.image = file;
+      await product.save();
+    }
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {new:true});
     sendSuccess(
       res,
       "Product updated successfully.",
-      { product: updateProduct },
+      { product: updatedProduct },
       200
     );
   } catch (error) {
@@ -78,7 +88,8 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find(req?.query ?? {});
+    let select = req.query?.select?.split(",") ?? [];
+    const products = await Product.find(req?.query ?? {}).select(select);
     sendSuccess(res, "", products, 200);
   } catch (error) {
     return sendError(res, err.message);

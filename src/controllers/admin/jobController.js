@@ -1,3 +1,4 @@
+const { Job, Ticket } = require("../../schemas");
 const {
   getAllJobsService,
   getJobService,
@@ -43,6 +44,20 @@ exports.createJobTicket = async (req, res) => {
     });
 
     sendSuccess(res, "", ticket, 200);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.deleteJob = async (req, res) => {
+  try {
+    const id = req.query.id;
+    if(!id){
+      throw new Error("Job id is required.")
+    }
+    await Job.findByIdAndDelete(id);
+    await Ticket.findOneAndDelete({job:id});
+    sendSuccess(res, "Job deleted successfully", {}, 200);
   } catch (err) {
     return sendError(res, err.message);
   }

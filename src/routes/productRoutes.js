@@ -1,3 +1,4 @@
+const { ProductsImageUploader } = require("../config/multer");
 const {
   createProduct,
   getProductById,
@@ -15,19 +16,21 @@ router.use(authMiddleware);
 router.post(
   "/create",
   authMiddleware,
+  ProductsImageUploader,
   createProductDto,
   dtoValidator,
   createProduct
 );
-router.get(
+router.put(
   "/edit",
   authMiddleware,
+  ProductsImageUploader,
   createProductDto,
   dtoValidator,
   editProduct
 );
-router.post("/delete", authMiddleware, deleteProduct);
-router.post("/all", authMiddleware, getAllProducts);
+router.delete("/delete", authMiddleware, deleteProduct);
+router.get("/all", authMiddleware, getAllProducts);
 router.get("/", authMiddleware, getProductById);
 
 module.exports = router;

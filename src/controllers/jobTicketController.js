@@ -129,8 +129,13 @@ exports.deleteJobTicket = async (req, res) => {
     if (!req.params?.id) {
       throw new Error("Ticket id is required");
     }
+    const ticket = await Ticket.findById(req.params.id);
+    await Job.findByIdAndUpdate(
+      ticket.job,
+      { $pull: { assigned_candidates: ticket.user } }
+    );
     await Ticket.findByIdAndDelete(req.params.id);
-    return sendSuccess(res, "", {}, 201);
+    return sendSuccess(res, "Job ticket deleted successfully.", {}, 201);
   } catch (err) {
     return sendError(res, err.message);
   }

@@ -12,6 +12,7 @@ const {
   getAllJobs,
   getJobById,
   createJobTicket,
+  deleteJob,
 } = require("../controllers/admin/jobController");
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.get("/user/:id", authMiddleware, getUserById);
 
 router.get("/jobs", authMiddleware, getAllJobs);
 router.get("/jobs/:id", authMiddleware, getJobById);
+router.delete("/jobs/delete", authMiddleware, deleteJob);
 
 router.post("/create-job-ticket", authMiddleware, createJobTicket);
 
