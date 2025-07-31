@@ -1,4 +1,5 @@
-const { JobStatus, JobTicketStatus } = require("../config/constants");
+const { JobStatus, JobTicketStatus, QueueJobTypes } = require("../config/constants");
+const notificationQueue = require("../queues/notificationQueue");
 const { User, Ticket, Job } = require("../schemas");
 const { sendSuccess, sendError } = require("../utils");
 const {
@@ -175,26 +176,35 @@ exports.acceptJobTicket = async (req, res) => {
     ticket.status = "accepted";
     await ticket.save();
 
+    await notificationQueue.add({
+      type:QueueJobTypes.JOB_STARTED,
+      data:{
+        customer:job?.customer,
+        employee:user,
+        jobId:job?._id
+      }
+    })
+
     sendSuccess(res, "Job has started", {}, 201);
 
-    sendAdminPushNotification(
-      "Job In Progress",
-      `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
-      {
-        image: user?.profile_img,
-        redirect: `job/${job?._id}`,
-      }
-    );
+    // sendAdminPushNotification(
+    //   "Job In Progress",
+    //   `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: `job/${job?._id}`,
+    //   }
+    // );
 
-    sendPushNotification(
-      job?.customer,
-      `Your Job is Now in Progress`,
-      `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
-      {
-        image: user?.profile_img,
-        redirect: `JobDetail_${job?._id}`,
-      }
-    );
+    // sendPushNotification(
+    //   job?.customer,
+    //   `Your Job is Now in Progress`,
+    //   `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: `JobDetail_${job?._id}`,
+    //   }
+    // );
   } catch (error) {
     return sendError(res, err.message);
   }

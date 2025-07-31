@@ -1,3 +1,5 @@
+const { QueueJobTypes } = require("../config/constants");
+const notificationQueue = require("../queues/notificationQueue");
 const { Job } = require("../schemas");
 const {
   getJobsService,
@@ -16,25 +18,13 @@ exports.createJob = async (req, res) => {
     const job = await createJobService({ ...req.body, customer: user._id });
     sendSuccess(res, "Job has been submitted successfully.", job, 200);
 
-    sendPushNotification(
-      user,
-      `Job Submitted Successfully!`,
-      `Hi ${user?.name}, your job has been submitted to the admin. An employee will be assigned shortly and will reach out to you soon.`,
-      {
-        "image": user?.profile_img ?? "",
-        "redirect": `JobDetail_${job?._id}`,
-      }
-    );
-
-    // sendAdminPushNotification(
-    //   "New Job Submitted",
-    //   `${user?.name} just submitted a new job on BestPort.`,
-    //   {
-    //     "image": user?.profile_img ?? "",
-    //     "redirect": `job/${job?._id}`,
-    //   }
-    // );
-
+    await notificationQueue.add({
+      type: QueueJobTypes.NEW_JOB,
+      data: {
+        user,
+        jobId: job?._id,
+      },
+    });
   } catch (err) {
     return sendError(res, err.message);
   }

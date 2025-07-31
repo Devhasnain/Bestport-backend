@@ -1,4 +1,6 @@
-const { Job, Ticket } = require("../../schemas");
+const { QueueJobTypes } = require("../../config/constants");
+const notificationQueue = require("../../queues/notificationQueue");
+const { Job, Ticket, User } = require("../../schemas");
 const {
   getAllJobsService,
   getJobService,
@@ -42,6 +44,14 @@ exports.createJobTicket = async (req, res) => {
       job,
       instructions,
     });
+
+    const employee = await User.findById(user);
+
+    await notificationQueue.add({
+      user:employee,
+      jobId:job,
+      type:QueueJobTypes.NEW_TICKET
+    })
 
     sendSuccess(res, "", ticket, 200);
   } catch (err) {

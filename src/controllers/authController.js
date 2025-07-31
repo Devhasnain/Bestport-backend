@@ -33,24 +33,24 @@ exports.register = async (req, res) => {
       201
     );
 
-    sendAdminPushNotification(
-      "New Registeration",
-      `New user ${user?.name} just signed up on Bestport.`,
-      {
-        image: user?.profile_img,
-        redirect: `user/${user?._id}`,
-      }
-    );
+    // sendAdminPushNotification(
+    //   "New Registeration",
+    //   `New user ${user?.name} just signed up on Bestport.`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: `user/${user?._id}`,
+    //   }
+    // );
 
-    sendPushNotification(
-      user,
-      `${user?.name} welcome to Bestport!`,
-      `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
-      {
-        image: user?.profile_img,
-        redirect: "CreateJob",
-      }
-    );
+    // sendPushNotification(
+    //   user,
+    //   `${user?.name} welcome to Bestport!`,
+    //   `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: "CreateJob",
+    //   }
+    // );
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -89,24 +89,24 @@ exports.googleLogin = async (req, res) => {
         201
       );
 
-      sendAdminPushNotification(
-        "New Registeration",
-        `New user ${user?.name} just signed up on Bestport.`,
-        {
-          image: user?.profile_img,
-          redirect: `user/${user?._id}`,
-        }
-      );
+      // sendAdminPushNotification(
+      //   "New Registeration",
+      //   `New user ${user?.name} just signed up on Bestport.`,
+      //   {
+      //     image: user?.profile_img,
+      //     redirect: `user/${user?._id}`,
+      //   }
+      // );
 
-      sendPushNotification(
-        user,
-        `${user?.name} welcome to Bestport!`,
-        `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
-        {
-          image: user?.profile_img,
-          redirect: "CreateJob",
-        }
-      );
+      // sendPushNotification(
+      //   user,
+      //   `${user?.name} welcome to Bestport!`,
+      //   `We're excited to have you onboard. ${user?.name} just joined BestPort — let's get started!`,
+      //   {
+      //     image: user?.profile_img,
+      //     redirect: "CreateJob",
+      //   }
+      // );
     }
   } catch (error) {
     return sendError(res, err.message);
