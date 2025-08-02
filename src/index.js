@@ -57,28 +57,16 @@ app.use(bodyParser.json({ limit: "30mb" }));
 
 // -------------------- Health Check --------------------
 app.get("/health", async (req, res) => {
-  // sendPushNotification(
-  //   "eyplkQ52TYypn_f66fztJT:APA91bE26YvIkqjcw6h8dvMi8MqdoJ17IUrM1UG3biGxi37MOju1WE_siXtkBrWhocJnG_p3b39oqmdMkNxkamq_rErIocqMqiBHgvXyFwnYkC9ei3agbdg",
-  //   "Test notification",
-  //   "Testing notifications sending and receiving."
-  // );
   await notificationQueue.add({
     type: QueueJobTypes.TEST,
     data: {
-      token:"dw8tb10pQBij8nX891wPQC:APA91bG216BzhAY3x-dXNkQT-wOUW0Bnq7aIvIXWJXA_Bx-aYqz5NfJfIr4n0a-vxFWdF6BoPorYZHQ4VNAs_qkLkpb1Fq9KsWZbnDgCBNocStUwgxGnV-w",
+      token:"cu_TnMSAQ1WziQwYCMKRv9:APA91bGxRGYxk962lJ8zQBh59haQqUv-QrxkgTulVX526daqbPOq-dGAA6EKimLM64Pdb9Lq6i4QowoeS4RnYFzVBP0mt2qYHSi2X6vQJfOwLmgZWKBopGA",
       title: "Test notification",
       body: "Test push notification",
     },
   });
-  // testPushNotification(
-  //   "dw8tb10pQBij8nX891wPQC:APA91bG216BzhAY3x-dXNkQT-wOUW0Bnq7aIvIXWJXA_Bx-aYqz5NfJfIr4n0a-vxFWdF6BoPorYZHQ4VNAs_qkLkpb1Fq9KsWZbnDgCBNocStUwgxGnV-w",
-  //   "Test push",
-  //   "Test push notification"
-  // )
   res.send({ status: "OK" });
 });
-
-// dw8tb10pQBij8nX891wPQC:APA91bG216BzhAY3x-dXNkQT-wOUW0Bnq7aIvIXWJXA_Bx-aYqz5NfJfIr4n0a-vxFWdF6BoPorYZHQ4VNAs_qkLkpb1Fq9KsWZbnDgCBNocStUwgxGnV-w
 
 // -------------------- API Routes --------------------
 app.use("/api/v1", routes);

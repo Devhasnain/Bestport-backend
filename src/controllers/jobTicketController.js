@@ -1,4 +1,8 @@
-const { JobStatus, JobTicketStatus, QueueJobTypes } = require("../config/constants");
+const {
+  JobStatus,
+  JobTicketStatus,
+  QueueJobTypes,
+} = require("../config/constants");
 const notificationQueue = require("../queues/notificationQueue");
 const { User, Ticket, Job } = require("../schemas");
 const { sendSuccess, sendError } = require("../utils");
@@ -57,6 +61,13 @@ exports.createJobTicket = async (req, res) => {
     ).populate({
       path: "user",
       select: ["name", "_id", "profile_img"],
+    });
+    await notificationQueue.add({
+      data: {
+      employee: user,
+      jobId: job?._id
+      },
+      type: QueueJobTypes.NEW_TICKET,
     });
 
     sendSuccess(res, "", ticket, 200);
@@ -131,10 +142,9 @@ exports.deleteJobTicket = async (req, res) => {
       throw new Error("Ticket id is required");
     }
     const ticket = await Ticket.findById(req.params.id);
-    await Job.findByIdAndUpdate(
-      ticket.job,
-      { $pull: { assigned_candidates: ticket.user } }
-    );
+    await Job.findByIdAndUpdate(ticket.job, {
+      $pull: { assigned_candidates: ticket.user },
+    });
     await Ticket.findByIdAndDelete(req.params.id);
     return sendSuccess(res, "Job ticket deleted successfully.", {}, 201);
   } catch (err) {
@@ -177,13 +187,13 @@ exports.acceptJobTicket = async (req, res) => {
     await ticket.save();
 
     await notificationQueue.add({
-      type:QueueJobTypes.JOB_STARTED,
-      data:{
-        customer:job?.customer,
-        employee:user,
-        jobId:job?._id
-      }
-    })
+      type: QueueJobTypes.JOB_STARTED,
+      data: {
+        customer: job?.customer,
+        employee: user,
+        jobId: job?._id,
+      },
+    });
 
     sendSuccess(res, "Job has started", {}, 201);
 

@@ -12,11 +12,7 @@ notificationQueue.process(async (job) => {
   const { type, data } = job?.data;
 
   if(type === QueueJobTypes.TEST){
-    console.log(
-      data?.token,
-      data?.title,
-      data?.body
-    )
+
     await testPushNotification(
       data?.token,
       data?.title,
@@ -50,7 +46,7 @@ notificationQueue.process(async (job) => {
       "Job In Progress",
       `${data?.customer?.name}'s job is now in progress. ${data?.employee?.name} has accepted the job ticket.`,
       {
-        image: data?.employee?.profile_img,
+        image: data?.employee?.profile_img ?? "",
         redirect: `job/${data?.jobId}`,
       }
     );
@@ -60,7 +56,7 @@ notificationQueue.process(async (job) => {
       `Your Job is Now in Progress`,
       `Hi ${data?.customer?.name}, your job is now in progress. ${data?.employee?.name} has been assigned and will contact you shortly.`,
       {
-        image: data?.employee?.profile_img,
+        image: data?.employee?.profile_img ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
@@ -72,7 +68,7 @@ notificationQueue.process(async (job) => {
       `New Job Assigned`,
       `Hi ${data?.employee?.name}, the admin has assigned you a new job. Please review the job details and proceed accordingly.`,
       {
-        image: data?.user?.profile_img,
+        image: data?.employee?.profile_img ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
