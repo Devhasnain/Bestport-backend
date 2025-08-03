@@ -1,7 +1,9 @@
 const { Job, Ticket } = require("../schemas");
 
 const getJobsService = async (userId) => {
-  return await Job.find({ customer: userId })
+  return await Job.find({
+    $or: [{ customer: userId }, { assigned_to: userId }],
+  })
     .sort({ createdAt: -1 })
     .populate([
       { path: "customer", select: "_id name profile_img" },
@@ -84,5 +86,5 @@ module.exports = {
   getJobService,
   getAllJobsService,
   createJobService,
-  createTicketService
+  createTicketService,
 };

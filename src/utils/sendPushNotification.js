@@ -28,7 +28,6 @@ const sendPushNotification = async (user, title, body, data = {}) => {
 
 const sendAdminPushNotification = async (title, body, data = {}) => {
   try {
-    console.log(data,"admin notification")
     await connectDB();
     const admins = await User.find({ role: "admin" });
     admins?.forEach(async (user) => {

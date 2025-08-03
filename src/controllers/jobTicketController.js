@@ -161,7 +161,7 @@ exports.isTicketAvailable = async (req, res) => {
     const user = req.user;
     const ticket = await Ticket.findOne({ job, user: user?._id });
     return sendSuccess(res, "", { ticket }, 201);
-  } catch (error) {
+  } catch (err) {
     return sendError(res, err.message);
   }
 };
@@ -215,7 +215,39 @@ exports.acceptJobTicket = async (req, res) => {
     //     redirect: `JobDetail_${job?._id}`,
     //   }
     // );
-  } catch (error) {
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.rejectJobTicket = async (req, res) => {
+  try {
+    const { ticketId } = req.query;
+    if (!ticketId) {
+      throw new Error("Ticket id is required");
+    }
+    await Ticket.findByIdAndUpdate(ticketId,{status:"rejected"});
+    sendSuccess(res, "Job ticket rejected", {}, 201);
+
+    // sendAdminPushNotification(
+    //   "Job In Progress",
+    //   `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: `job/${job?._id}`,
+    //   }
+    // );
+
+    // sendPushNotification(
+    //   job?.customer,
+    //   `Your Job is Now in Progress`,
+    //   `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
+    //   {
+    //     image: user?.profile_img,
+    //     redirect: `JobDetail_${job?._id}`,
+    //   }
+    // );
+  } catch (err) {
     return sendError(res, err.message);
   }
 };
