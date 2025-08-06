@@ -22,7 +22,7 @@ exports.getProductById = async (req, res) => {
       throw new Error("Product id is required");
     }
     const product = await Product.findById(id);
-    sendSuccess(res, "New product created successfully.", product, 200);
+    sendSuccess(res, "", product, 200);
   } catch (error) {
     return sendError(res, err.message);
   }

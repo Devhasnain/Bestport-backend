@@ -17,7 +17,8 @@ const QueueJobTypes = {
   NEW_JOB:"NEW_JOB",
   JOB_STARTED:"JOB_STARTED",
   NEW_TICKET:"NEW_TICKET",
-  TEST:"TEST"
+  TEST:"TEST",
+  JOB_COMPLETED:"JOB_COMPLETED"
 }
 
 module.exports = {

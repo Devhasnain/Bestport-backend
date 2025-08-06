@@ -11,15 +11,10 @@ require("dotenv").config();
 notificationQueue.process(async (job) => {
   const { type, data } = job?.data;
 
-  if(type === QueueJobTypes.TEST){
-
-    await testPushNotification(
-      data?.token,
-      data?.title,
-      data?.body
-    );
+  if (type === QueueJobTypes.TEST) {
+    await testPushNotification(data?.token, data?.title, data?.body);
   }
- 
+
   if (type === QueueJobTypes.NEW_JOB) {
     await sendPushNotification(
       data?.user,
@@ -62,6 +57,30 @@ notificationQueue.process(async (job) => {
     );
   }
 
+  if (type === QueueJobTypes.JOB_COMPLETED) {
+
+     await sendPushNotification(
+      data?.customer,
+      `Your Job is Completed`,
+      `Hi ${data?.customer?.name}, your job has been completed. ${data?.employee?.name} has successfully finished the assigned work.`,
+      {
+        image: data?.employee?.profile_img ?? "",
+        redirect: `JobDetail_${data?.jobId}`,
+      }
+    );
+    
+    await sendAdminPushNotification(
+      "Job Completed",
+      `${data?.customer?.name}'s job has been completed. ${data?.employee?.name} successfully finished the job ticket.`,
+      {
+        image: data?.employee?.profile_img ?? "",
+        redirect: `job/${data?.jobId}`,
+      }
+    );
+
+   
+  }
+
   if (type === QueueJobTypes.NEW_TICKET) {
     await sendPushNotification(
       data?.employee,
@@ -77,8 +96,7 @@ notificationQueue.process(async (job) => {
   return { success: true };
 });
 
-
-notificationQueue.on("completed",async (job, result) => {
+notificationQueue.on("completed", async (job, result) => {
   console.log(`Job completed`);
   await job.remove();
   console.log(`Job completed and removed`);

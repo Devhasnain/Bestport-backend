@@ -1,6 +1,6 @@
-const { QueueJobTypes } = require("../config/constants");
+const { QueueJobTypes, JobStatus } = require("../config/constants");
 const notificationQueue = require("../queues/notificationQueue");
-const { Job } = require("../schemas");
+const { Job, User, Product } = require("../schemas");
 const {
   getJobsService,
   createJobService,
@@ -30,10 +30,80 @@ exports.createJob = async (req, res) => {
   }
 };
 
+exports.completeJob = async (req, res) => {
+  try {
+    const jobId = req.query.id;
+    if (!jobId) {
+      throw new Error("Job id is required.");
+    }
+
+    const job = await Job.findById(jobId);
+
+    if (job?.status === JobStatus.completed) {
+      throw new Error("This job has already completed");
+    }
+
+    if (job?.status === JobStatus.cancelled) {
+      throw new Error("This job has been cancelled");
+    }
+
+    job.status = JobStatus.completed;
+    job.products = req.body.products ?? [];
+
+    await job.save();
+
+    const customer = await User.findById(job.customer).select(["-password"]);
+    const employee = await User.findById(job.assigned_to).select(["-password"]);
+
+    await notificationQueue.add({
+      type: QueueJobTypes.JOB_COMPLETED,
+      data: {
+        customer,
+        employee,
+        jobId: job._id,
+      },
+    });
+
+    sendSuccess(res, "Job has been completed", {}, 200);
+
+    setImmediate(async () => {
+      try {
+        if (req?.body?.products?.length) {
+          for (const item of req.body.products) {
+            const product = await Product.findById(item?.product);
+            if (!product) continue;
+
+            const newQuantity = product.quantity - item.quantity;
+
+            product.quantity = newQuantity < 0 ? 0 : newQuantity;
+
+            await product.save();
+          }
+        }
+      } catch (backgroundError) {
+        console.error(
+          "Background job completion error:",
+          backgroundError.message
+        );
+      }
+    });
+  } catch (error) {
+    sendError(res, error?.message);
+  }
+};
+
 exports.getJobs = async (req, res) => {
   try {
     const user = req.user;
-    const jobs = await getJobsService(user?._id);
+    let query = {};
+    if(req.query?.status){
+      if(req.query?.status === "in_progress"){
+      query.status = JobStatus.inProgress
+      }else{
+        query.status=req.query?.status
+      }
+    }
+    const jobs = await getJobsService(user?._id, query);
     sendSuccess(res, "", jobs, 200);
   } catch (err) {
     return sendError(res, err.message);

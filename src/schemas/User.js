@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
     date_of_birth: { type: Date },
+    position: String,
     about: String,
     is_active: Boolean,
     is_locked: Boolean,

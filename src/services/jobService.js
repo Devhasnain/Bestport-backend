@@ -1,9 +1,11 @@
 const { Job, Ticket } = require("../schemas");
 
-const getJobsService = async (userId) => {
-  return await Job.find({
+const getJobsService = async (userId, query={}) => {
+  const filters = {
     $or: [{ customer: userId }, { assigned_to: userId }],
-  })
+    ...query
+  }
+  return await Job.find(filters)
     .sort({ createdAt: -1 })
     .populate([
       { path: "customer", select: "_id name profile_img" },
