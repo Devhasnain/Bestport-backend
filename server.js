@@ -17,7 +17,7 @@ const io = new Server(server, {
 });
 io.use(socketAuthMiddleware);
 io.on("connection", socketServer);
-server.listen(process.env.PORT, "0.0.0.0");
+server.listen(process.env.PORT, "127.0.0.1");
 const onListening = async () => {
   console.log("server is up...");
   await connectDB();
