@@ -5,7 +5,7 @@ const helmet = require("helmet"); // Security headers
 const compression = require("compression"); // GZIP compression
 const rateLimit = require("express-rate-limit"); // Prevent brute-force
 // const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL injection
-const xssClean = require("xss-clean"); // Prevent XSS attacks
+// const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
 const morgan = require("morgan");
 const routes = require("./routes/index");
@@ -50,7 +50,7 @@ app.use(responseTime());
 
 // Security Parsing
 // app.use(mongoSanitize({ replaceWith: "_" }));
-app.use(xssClean());
+// app.use(xssClean());
 
 // -------------------- CORS --------------------
 app.use(
