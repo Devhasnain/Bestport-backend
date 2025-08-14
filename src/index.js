@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const helmet = require("helmet"); // Security headers
 const compression = require("compression"); // GZIP compression
 const rateLimit = require("express-rate-limit"); // Prevent brute-force
-const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL injection
+// const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL injection
 const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
 const morgan = require("morgan");
@@ -26,7 +26,18 @@ app.use(
 );
 // -------------------- Security Middlewares --------------------
 
-app.use(helmet()); // Set secure HTTP headers
+app.use(helmet(
+  {
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "data:", "https:"],
+      "script-src": ["'self'", "'unsafe-inline'", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}
+)); // Set secure HTTP headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.disable("x-powered-by");
 if (process.env.NODE_ENV === "development") {
@@ -38,7 +49,7 @@ app.set("etag", "strong");
 app.use(responseTime());
 
 // Security Parsing
-app.use(mongoSanitize({ replaceWith: "_" }));
+// app.use(mongoSanitize({ replaceWith: "_" }));
 app.use(xssClean());
 
 // -------------------- CORS --------------------
