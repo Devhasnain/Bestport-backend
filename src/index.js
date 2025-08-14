@@ -40,6 +40,7 @@ app.use(helmet(
 )); // Set secure HTTP headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.disable("x-powered-by");
+app.set('trust proxy', 1);
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
