@@ -28,5 +28,6 @@ router.get("/jobs/:id", authMiddleware, getJobById);
 router.delete("/jobs/delete", authMiddleware, deleteJob);
 
 router.post("/create-job-ticket", authMiddleware, createJobTicket);
+router.post("/create-employee",authMiddleware, dtoValidator, dtoValidator)
 
 module.exports = router;

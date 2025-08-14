@@ -39,6 +39,54 @@ const registerDto = [
   passwordDto,
 ];
 
+const createEmployeeDto = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 3 })
+    .withMessage("Name must be at least 3 characters"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail()
+    .custom(async (value) => {
+      const user = await User.findOne({ email: value });
+      if (user) {
+        throw new Error("Email is already in use");
+      }
+      return true;
+    }),
+  passwordDto,
+  body("date_of_birth")
+    .notEmpty()
+    .withMessage("Date of birth is required")
+    .isISO8601()
+    .withMessage("Date of birth must be a valid date"),
+body("position")
+        .trim()
+        .notEmpty()
+        .withMessage("Position is required")
+        .isLength({ min: 10 })
+        .withMessage("Position must be at least 10 characters"),
+    body("about")
+        .trim()
+        .notEmpty()
+        .withMessage("About is required")
+        .isLength({ min: 10 })
+        .withMessage("About must be at least 10 characters"),
+  body("phone")
+        .trim()
+        .notEmpty()
+        .withMessage("About is required")
+        .isLength({ min: 10 })
+        .withMessage("About must be at least 10 characters"),
+];
+
 const loginDto = [
   body("email")
     .trim()
@@ -122,7 +170,7 @@ const editPasswordDto = [
 ];
 
 const sendOtpEmailDtp = [
-    body("email")
+  body("email")
     .trim()
     .notEmpty()
     .withMessage("Email is required")
@@ -188,5 +236,5 @@ module.exports = {
   editPasswordDto,
   sendOtpEmailDtp,
   verifyEmailOtpDto,
-  setNewPasswordDto
+  setNewPasswordDto,
 };

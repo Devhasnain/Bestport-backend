@@ -29,3 +29,18 @@ exports.getUserById = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
+
+exports.createEmployee = async(req,res)=>{
+  try {
+    let file = req.file;
+    if(!file){
+      throw new Error("Product image is required.")
+    }
+    const newUser = await User.create({ ...req.body, profile_img:file});
+    const user = {...newUser,password:""};
+    return sendSuccess(res, "Employee created successfully", user, 201);
+  } catch (error) {
+    return sendError(res, err.message);
+  }
+}
