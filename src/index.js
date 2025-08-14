@@ -38,7 +38,7 @@ app.set("etag", "strong");
 app.use(responseTime());
 
 // Security Parsing
-app.use(mongoSanitize());
+app.use(mongoSanitize({ replaceWith: "_" }));
 app.use(xssClean());
 
 // -------------------- CORS --------------------
