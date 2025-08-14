@@ -14,7 +14,7 @@ const notificationQueue = require("./queues/notificationQueue");
 const basicAuth = require("express-basic-auth");
 const { QueueJobTypes } = require("./config/constants");
 const serverAdapter = require("./queues/bullBoard");
-
+const responseTime = require("response-time");
 const app = express();
 
 app.use(
@@ -29,9 +29,17 @@ app.use(
 app.use(helmet()); // Set secure HTTP headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.disable("x-powered-by");
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 // -------------------- Performance Middlewares --------------------
-app.use(compression()); // Compress all responses
+app.use(compression());
+app.set("etag", "strong");
+app.use(responseTime());
+
+// Security Parsing
+app.use(mongoSanitize());
+app.use(xssClean());
 
 // -------------------- CORS --------------------
 app.use(
