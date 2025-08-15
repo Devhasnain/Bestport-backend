@@ -34,7 +34,7 @@ const getJobService = async (jobid) => {
   return await Job.findById(jobid)
     .populate([
       { path: "customer", select: "_id name profile_img" },
-      { path: "assigned_to", select: "_id name profile_img" },
+      { path: "assigned_to", select: "_id name profile_img position" },
       {
         path: "review",
         populate: {

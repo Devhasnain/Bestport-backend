@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+let TypeString = {
+  type: String,
+};
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -18,7 +21,11 @@ const userSchema = new mongoose.Schema(
     is_locked: Boolean,
     phone: String,
     address: String,
-    profile_img: String,
+    profile_img: {
+      path: TypeString,
+      mimetype: TypeString,
+      filename: TypeString,
+    },
     rating: { type: Number, default: 0 },
     reviews: {
       type: mongoose.Schema.Types.ObjectId,

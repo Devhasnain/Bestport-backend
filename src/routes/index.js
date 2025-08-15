@@ -10,16 +10,6 @@ const jobTicketRoutes = require("./jobTicket");
 const notificationRoutes = require("./notificationRoutes");
 const productsRoutes = require("./productRoutes");
 const userRoutes = require("./userRoutes");
-
-router.use(checkAccessKey);
-router.use("/auth", authRoutes);
-router.use("/admin", adminRoutes);
-router.use("/job", jobRoutes);
-router.use("/ticket", jobTicketRoutes);
-router.use("/notification", notificationRoutes);
-router.use("/product", productsRoutes);
-router.use("/user", userRoutes);
-
 router.get("/noti/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params?.id);
@@ -33,6 +23,16 @@ router.get("/noti/:id", async (req, res) => {
     res.send({ status: "ERROR", error });
   }
 });
+router.use(checkAccessKey);
+router.use("/auth", authRoutes);
+router.use("/admin", adminRoutes);
+router.use("/job", jobRoutes);
+router.use("/ticket", jobTicketRoutes);
+router.use("/notification", notificationRoutes);
+router.use("/product", productsRoutes);
+router.use("/user", userRoutes);
+
+
 
 router.post('/pusher/auth', (req, res) => {
   const socketId = req.body.socket_id;

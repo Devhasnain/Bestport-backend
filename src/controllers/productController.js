@@ -5,13 +5,19 @@ const { cloudinary } = require("../config/multer");
 exports.createProduct = async (req, res) => {
   try {
     let file = req.file;
-    if(!file){
-      throw new Error("Product image is required.")
+    if (!file) {
+      throw new Error("Product image is required.");
     }
     const product = await Product.create({ ...req.body, image: file });
-    sendSuccess(res, "New product created successfully.", {product}, 200);
-  } catch (error) {
-    return sendError(res, err.message);
+    sendSuccess(res, "New product created successfully.", { product }, 200);
+  } catch (err) {
+    if (file && file?.filename) {
+      await cloudinary.api.delete_resources([file?.filename], {
+        resource_type: "image",
+        type: "upload",
+      });
+    }
+    sendError(res, err.message);
   }
 };
 
@@ -23,8 +29,8 @@ exports.getProductById = async (req, res) => {
     }
     const product = await Product.findById(id);
     sendSuccess(res, "", product, 200);
-  } catch (error) {
-    return sendError(res, err.message);
+  } catch (err) {
+    sendError(res, err.message);
   }
 };
 
@@ -45,15 +51,23 @@ exports.editProduct = async (req, res) => {
       product.image = file;
       await product.save();
     }
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {new:true});
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     sendSuccess(
       res,
       "Product updated successfully.",
       { product: updatedProduct },
       200
     );
-  } catch (error) {
-    return sendError(res, err.message);
+  } catch (err) {
+    if (file && file?.filename) {
+      await cloudinary.api.delete_resources([file?.filename], {
+        resource_type: "image",
+        type: "upload",
+      });
+    }
+    sendError(res, err.message);
   }
 };
 
@@ -75,12 +89,7 @@ exports.deleteProduct = async (req, res) => {
 
     await Product.findByIdAndDelete(id);
 
-    sendSuccess(
-      res,
-      "Product deleted successfully.",
-      { },
-      200
-    );
+    sendSuccess(res, "Product deleted successfully.", {}, 200);
   } catch (error) {
     return sendError(res, err.message);
   }

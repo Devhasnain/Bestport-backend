@@ -80,7 +80,7 @@ app.get("/health", async (req, res) => {
   await notificationQueue.add({
     type: QueueJobTypes.TEST,
     data: {
-      token:"cu_TnMSAQ1WziQwYCMKRv9:APA91bGxRGYxk962lJ8zQBh59haQqUv-QrxkgTulVX526daqbPOq-dGAA6EKimLM64Pdb9Lq6i4QowoeS4RnYFzVBP0mt2qYHSi2X6vQJfOwLmgZWKBopGA",
+      token:"dLZBMnqMQmC2FtQHs03Nw_:APA91bEldOb2JZHVfUkZ6AII1doNoF6_Om-gedWt6Buo-Dm_IAUwVuVlXiO_c2gxuWyJduDpX1s_QpI9aZwP5HygF8rb0WHGlE-5DTRDui9kgeVI-NaX47s",
       title: "Test notification",
       body: "Test push notification",
     },

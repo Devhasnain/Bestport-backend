@@ -22,7 +22,21 @@ const ProductsImageUploader = multer({ storage: ProductsImageStorage }).single(
   "image"
 );
 
+const UsersImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "bestport/users",
+    resource_type: "auto",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  },
+});
+
+const UsersImageUploader = multer({ storage: UsersImageStorage }).single(
+  "image"
+);
+
 module.exports = {
     ProductsImageUploader,
+    UsersImageUploader,
     cloudinary
 }
