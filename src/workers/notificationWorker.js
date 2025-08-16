@@ -21,7 +21,7 @@ notificationQueue.process(async (job) => {
       `Job Submitted Successfully!`,
       `Hi ${data?.user?.name}, your job has been submitted to the admin. An employee will be assigned shortly and will reach out to you soon.`,
       {
-        image: data?.user?.profile_img ?? "",
+        image: data?.user?.profile_img?.path ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
@@ -30,7 +30,7 @@ notificationQueue.process(async (job) => {
       "New Job Submitted",
       `${data?.user?.name} just submitted a new job on BestPort.`,
       {
-        image: data?.user?.profile_img ?? "",
+        image: data?.user?.profile_img?.path ?? "",
         redirect: `job/${data?.jobId}`,
       }
     );
@@ -41,7 +41,7 @@ notificationQueue.process(async (job) => {
       "Job In Progress",
       `${data?.customer?.name}'s job is now in progress. ${data?.employee?.name} has accepted the job ticket.`,
       {
-        image: data?.employee?.profile_img ?? "",
+        image: data?.employee?.profile_img?.path ?? "",
         redirect: `job/${data?.jobId}`,
       }
     );
@@ -51,7 +51,7 @@ notificationQueue.process(async (job) => {
       `Your Job is Now in Progress`,
       `Hi ${data?.customer?.name}, your job is now in progress. ${data?.employee?.name} has been assigned and will contact you shortly.`,
       {
-        image: data?.employee?.profile_img ?? "",
+        image: data?.employee?.profile_img?.path ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
@@ -64,7 +64,7 @@ notificationQueue.process(async (job) => {
       `Your Job is Completed`,
       `Hi ${data?.customer?.name}, your job has been completed. ${data?.employee?.name} has successfully finished the assigned work.`,
       {
-        image: data?.employee?.profile_img ?? "",
+        image: data?.employee?.profile_img?.path ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
@@ -73,7 +73,7 @@ notificationQueue.process(async (job) => {
       "Job Completed",
       `${data?.customer?.name}'s job has been completed. ${data?.employee?.name} successfully finished the job ticket.`,
       {
-        image: data?.employee?.profile_img ?? "",
+        image: data?.employee?.profile_img?.path ?? "",
         redirect: `job/${data?.jobId}`,
       }
     );
@@ -87,7 +87,7 @@ notificationQueue.process(async (job) => {
       `New Job Assigned`,
       `Hi ${data?.employee?.name}, the admin has assigned you a new job. Please review the job details and proceed accordingly.`,
       {
-        image: data?.employee?.profile_img ?? "",
+        image: data?.employee?.profile_img?.path ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
