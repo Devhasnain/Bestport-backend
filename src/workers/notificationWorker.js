@@ -1,3 +1,4 @@
+const dbConnection = require("../config/db")
 const { QueueJobTypes } = require("../config/constants");
 const notificationQueue = require("../queues/notificationQueue");
 const {
@@ -7,6 +8,8 @@ const {
 } = require("../utils/sendPushNotification");
 
 require("dotenv").config();
+
+await dbConnection();
 
 notificationQueue.process(async (job) => {
   const { type, data } = job?.data;
@@ -58,8 +61,7 @@ notificationQueue.process(async (job) => {
   }
 
   if (type === QueueJobTypes.JOB_COMPLETED) {
-
-     await sendPushNotification(
+    await sendPushNotification(
       data?.customer,
       `Your Job is Completed`,
       `Hi ${data?.customer?.name}, your job has been completed. ${data?.employee?.name} has successfully finished the assigned work.`,
@@ -68,7 +70,7 @@ notificationQueue.process(async (job) => {
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
-    
+
     await sendAdminPushNotification(
       "Job Completed",
       `${data?.customer?.name}'s job has been completed. ${data?.employee?.name} successfully finished the job ticket.`,
@@ -77,8 +79,6 @@ notificationQueue.process(async (job) => {
         redirect: `job/${data?.jobId}`,
       }
     );
-
-   
   }
 
   if (type === QueueJobTypes.NEW_TICKET) {
@@ -88,6 +88,27 @@ notificationQueue.process(async (job) => {
       `Hi ${data?.employee?.name}, the admin has assigned you a new job. Please review the job details and proceed accordingly.`,
       {
         image: data?.employee?.profile_img?.path ?? "",
+        redirect: `JobDetail_${data?.jobId}`,
+      }
+    );
+  }
+
+  if (type === QueueJobTypes.JOB_REVIEW) {
+    await sendAdminPushNotification(
+      "New Job Review",
+      `${data?.customer?.name} has left a review for ${data?.employee?.name} on job "${data?.jobTitle}".`,
+      {
+        image: data?.customer?.profile_img?.path ?? "",
+        redirect: `job/${data?.jobId}`,
+      }
+    );
+
+    await sendPushNotification(
+      data?.employee,
+      "You Received a New Review",
+      `Hi ${data?.employee?.name}, ${data?.customer?.name} has left you a review on job "${data?.jobTitle}".`,
+      {
+        image: data?.customer?.profile_img?.path ?? "",
         redirect: `JobDetail_${data?.jobId}`,
       }
     );

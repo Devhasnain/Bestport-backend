@@ -8,7 +8,7 @@ exports.getUserProfile = async(req,res)=>{
             throw new Error("Parameter id is required");
         }
 
-        const user = await User.findById(id).select(['-password','-device','-is_available','-is_active','-is_locked','-phone','-address','-email']).populate({
+        const user = await User.findById(id).select(['-password','-device','-is_available','-is_active','-is_locked','-address','-email']).populate({
             path:"reviews",
             select:['rating','comment']
         });

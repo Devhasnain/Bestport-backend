@@ -1,4 +1,3 @@
-const connectDB = require("../config/db");
 const admin = require("../config/firebase");
 const { User, Notification } = require("../schemas");
 const sendPushNotification = async (user, title, body, data = {}) => {
@@ -12,7 +11,6 @@ const sendPushNotification = async (user, title, body, data = {}) => {
   };
 
   try {
-    await connectDB();
     await Notification.create({
       recipient: user?._id,
       title,
@@ -28,7 +26,6 @@ const sendPushNotification = async (user, title, body, data = {}) => {
 
 const sendAdminPushNotification = async (title, body, data = {}) => {
   try {
-    await connectDB();
     const admins = await User.find({ role: "admin" });
     admins?.forEach(async (user) => {
       await Notification.create({

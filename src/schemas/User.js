@@ -27,10 +27,11 @@ const userSchema = new mongoose.Schema(
       filename: TypeString,
     },
     rating: { type: Number, default: 0 },
-    reviews: {
+    reviews: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Review",
-    },
+      default:[]
+    }],
     device:{
       fcm_token:{ type: String, default: null },
       device_id:{type:String},

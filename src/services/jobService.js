@@ -1,3 +1,4 @@
+const { JobStatus } = require("../config/constants");
 const { Job, Ticket } = require("../schemas");
 
 const getJobsService = async (userId, query={}) => {
@@ -30,8 +31,8 @@ const createJobService = async (data) => {
   });
 };
 
-const getJobService = async (jobid) => {
-  return await Job.findById(jobid)
+const getJobService = async (jobid, user) => {
+  const job = await Job.findById(jobid)
     .populate([
       { path: "customer", select: "_id name profile_img" },
       { path: "assigned_to", select: "_id name profile_img position" },
@@ -44,6 +45,16 @@ const getJobService = async (jobid) => {
       },
     ])
     .select(["-updatedAt", "-__v"]);
+    const userId = user?._id;
+    const canEmployeeIntract=user?.role === "employee" && userId && !job?.assigned_to && job?.assigned_candidates?.includes(userId);
+    return {
+      job,
+      meta:{
+        canCompleteJob:job?.status === JobStatus.inProgress && job?.assigned_to?._id?.toString() === userId?.toString(),
+        canReviewJob:job?.status === JobStatus.completed && job?.customer?._id?.toString() === userId?.toString() && !job.review,
+        canEmployeeIntract,
+      }
+    }
 };
 
 const getAllJobsService = async ({ status, page, limit }) => {

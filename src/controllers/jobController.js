@@ -112,8 +112,9 @@ exports.getJobs = async (req, res) => {
 
 exports.getJobById = async (req, res) => {
   try {
+    const user = req.user;
     const { id } = req.params;
-    const job = await getJobService(id);
+    const job = await getJobService(id,user);
     sendSuccess(res, "", job, 200);
   } catch (err) {
     return sendError(res, err.message);

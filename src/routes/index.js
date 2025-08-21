@@ -10,6 +10,8 @@ const jobTicketRoutes = require("./jobTicket");
 const notificationRoutes = require("./notificationRoutes");
 const productsRoutes = require("./productRoutes");
 const userRoutes = require("./userRoutes");
+const reviewRoutes = require("./reviewRoutes");
+
 router.get("/noti/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params?.id);
@@ -31,6 +33,7 @@ router.use("/ticket", jobTicketRoutes);
 router.use("/notification", notificationRoutes);
 router.use("/product", productsRoutes);
 router.use("/user", userRoutes);
+router.use("/review", reviewRoutes);
 
 
 

@@ -10,6 +10,7 @@ const jobSchema = new mongoose.Schema(
     city: { type: String, required: true },
     post_code: { type: String, required: true },
     address: { type: String, required: true },
+    contact_no:{type:String},
     instructions: String,
     customer: {
       type: mongoose.Schema.Types.ObjectId,
