@@ -9,7 +9,7 @@ const {
 
 require("dotenv").config();
 
-await dbConnection();
+dbConnection();
 
 notificationQueue.process(async (job) => {
   const { type, data } = job?.data;
