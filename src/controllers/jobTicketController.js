@@ -10,6 +10,7 @@ const {
   sendAdminPushNotification,
   sendPushNotification,
 } = require("../utils/sendPushNotification");
+const SocketWorker = require("../workers/socketWorker");
 
 exports.createJobTicket = async (req, res) => {
   try {
@@ -62,6 +63,9 @@ exports.createJobTicket = async (req, res) => {
       path: "user",
       select: ["name", "_id", "profile_img"],
     });
+
+    SocketWorker.assignJob({ ticket, userId:user?._id });
+
     await notificationQueue.add({
       data: {
       employee: user,

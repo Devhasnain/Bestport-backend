@@ -8,6 +8,7 @@ const {
 } = require("../../services/jobService");
 const { sendSuccess, sendError } = require("../../utils");
 
+
 exports.getAllJobs = async (req, res) => {
   try {
     const { status, page = 1, limit = 10 } = req.query;
@@ -46,12 +47,12 @@ exports.createJobTicket = async (req, res) => {
     });
 
     const employee = await User.findById(user);
-
+   
     await notificationQueue.add({
-      user:employee,
-      jobId:job,
-      type:QueueJobTypes.NEW_TICKET
-    })
+      user: employee,
+      jobId: job,
+      type: QueueJobTypes.NEW_TICKET,
+    });
 
     sendSuccess(res, "", ticket, 200);
   } catch (err) {
@@ -62,11 +63,11 @@ exports.createJobTicket = async (req, res) => {
 exports.deleteJob = async (req, res) => {
   try {
     const id = req.query.id;
-    if(!id){
-      throw new Error("Job id is required.")
+    if (!id) {
+      throw new Error("Job id is required.");
     }
     await Job.findByIdAndDelete(id);
-    await Ticket.findOneAndDelete({job:id});
+    await Ticket.findOneAndDelete({ job: id });
     sendSuccess(res, "Job deleted successfully", {}, 200);
   } catch (err) {
     return sendError(res, err.message);

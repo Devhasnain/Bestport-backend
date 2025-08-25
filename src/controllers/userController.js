@@ -10,7 +10,11 @@ exports.getUserProfile = async(req,res)=>{
 
         const user = await User.findById(id).select(['-password','-device','-is_available','-is_active','-is_locked','-address','-email']).populate({
             path:"reviews",
-            select:['rating','comment']
+            select:['rating','comment','createdAt','customer'],
+            populate:{
+                path:"customer",
+                select:['name','profile_img']
+            }
         });
 
     sendSuccess(res, "New product created successfully.", user, 200);

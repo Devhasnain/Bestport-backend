@@ -74,7 +74,7 @@ exports.googleLogin = async (req, res) => {
       );
     } else {
       const user = await User.create({
-        profile_img,
+        profile_img:{path:profile_img},
         name,
         email,
         password: `new-google-user-${name}`,
