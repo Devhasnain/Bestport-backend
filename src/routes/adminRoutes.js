@@ -9,6 +9,7 @@ const {
   getUserById,
   createEmployee,
   editEmployee,
+  getAllEmployeesList,
 } = require("../controllers/admin/userController");
 const {
   getAllJobs,
@@ -25,6 +26,7 @@ router.use(authMiddleware);
 router.get("/me", profile);
 
 router.get("/employees", getEmployees);
+router.get("/employees-list", getAllEmployeesList);
 router.get("/customers", getCustomers);
 router.get("/user/:id", getUserById);
 

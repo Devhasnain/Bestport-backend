@@ -4,10 +4,60 @@ const { sendError, sendSuccess } = require("../../utils");
 
 exports.getEmployees = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [employees, total] = await Promise.all([
+      User.find({ role: "employee" })
+        .select(["-password"])
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      User.countDocuments({ role: "employee" }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return sendSuccess(
+      res,
+      "",
+      {
+        employees,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          limit,
+        },
+      },
+      201
+    );
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.getAllEmployeesList = async (req, res) => {
+  try {
     const employees = await User.find({ role: "employee" }).select([
-      "-password",
-    ]).sort({createdAt:-1});
-    return sendSuccess(res, "", employees, 201);
+      "name",
+      "_id",
+      "profile_img",
+      "email",
+      "phone",
+      "position",
+    ]);
+
+    return sendSuccess(
+      res,
+      "",
+      {
+        employees,
+      },
+      201
+    );
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -15,11 +65,36 @@ exports.getEmployees = async (req, res) => {
 
 exports.getCustomers = async (req, res) => {
   try {
-    const customers = await User.find({ role: "customer" }).select([
-      "-password",
-    ]).sort({createdAt:-1});
-    ;
-    return sendSuccess(res, "", customers, 201);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [customers, total] = await Promise.all([
+      User.find({ role: "customer" })
+        .select(["-password"])
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      User.countDocuments({ role: "customer" }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return sendSuccess(
+      res,
+      "",
+      {
+        customers,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          limit,
+        },
+      },
+      201
+    );
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -46,7 +121,7 @@ exports.createEmployee = async (req, res) => {
       profile_img: file,
       role: "employee",
     });
-    const user = await User.findById(newUser?._id).select(['-password']);
+    const user = await User.findById(newUser?._id).select(["-password"]);
     return sendSuccess(res, "Employee created successfully", user, 201);
   } catch (err) {
     if (file && file?.filename) {
@@ -102,7 +177,6 @@ exports.editEmployee = async (req, res) => {
       { user: userWithoutPassword },
       200
     );
-
   } catch (err) {
     // Delete uploaded file from Cloudinary if an error occurs
     if (file?.filename) {
@@ -114,4 +188,3 @@ exports.editEmployee = async (req, res) => {
     sendError(res, err.message);
   }
 };
-

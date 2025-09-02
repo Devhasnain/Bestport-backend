@@ -5,5 +5,6 @@ const Ticket = require("./Ticket");
 const Otp = require("./Otp");
 const Notification = require("./Notification");
 const Product = require("./Product");
+const HelpRequest = require("./HelpRequest");
 
-module.exports = { User, Job, Review,Ticket, Otp,Notification, Product };
+module.exports = { User, Job, Review,Ticket, Otp,Notification, Product,HelpRequest};

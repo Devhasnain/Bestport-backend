@@ -1,4 +1,4 @@
-const dbConnection = require("../config/db")
+const dbConnection = require("../config/db");
 const { QueueJobTypes } = require("../config/constants");
 const notificationQueue = require("../queues/notificationQueue");
 const {
@@ -112,6 +112,27 @@ notificationQueue.process(async (job) => {
         redirect: `JobDetail_${data?.jobId}`,
       }
     );
+  }
+
+  if (type === QueueJobTypes.HELP_REQUEST) {
+   await sendAdminPushNotification(
+    "New Help Request",
+    `${data?.name} has submitted a new help request: "${data?.subject}".`,
+    {
+      image: data?.profile_img ?? "",
+      redirect: `help-requests/${data?._id}`,
+    }
+  );
+
+  await sendPushNotification(
+    data?.user,
+    "Help Request Submitted",
+    `Hi ${data?.name}, your help request "${data?.subject}" has been received. Our support team will get back to you soon.`,
+    {
+      image: "",
+      redirect: `HelpRequest_${data?._id}`,
+    }
+  );
   }
 
   return { success: true };

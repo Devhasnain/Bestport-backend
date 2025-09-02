@@ -1,11 +1,11 @@
 const { JobStatus } = require("../config/constants");
 const { Job, Ticket } = require("../schemas");
 
-const getJobsService = async (userId, query={}) => {
+const getJobsService = async (userId, query = {}) => {
   const filters = {
     $or: [{ customer: userId }, { assigned_to: userId }],
-    ...query
-  }
+    ...query,
+  };
   return await Job.find(filters)
     .sort({ createdAt: -1 })
     .populate([
@@ -34,7 +34,7 @@ const createJobService = async (data) => {
 const getJobService = async (jobid, user) => {
   const job = await Job.findById(jobid)
     .populate([
-      { path: "customer", select: "_id name profile_img" },
+      { path: "customer", select: "_id name profile_img email" },
       { path: "assigned_to", select: "_id name profile_img position" },
       {
         path: "review",
@@ -43,25 +43,33 @@ const getJobService = async (jobid, user) => {
           select: "_id name profile_img",
         },
       },
+      { path: "products.product", select: "_id title description price image" },
     ])
     .select(["-updatedAt", "-__v"]);
-    const userId = user?._id;
-    const canEmployeeIntract=user?.role === "employee" && userId && !job?.assigned_to && job?.assigned_candidates?.includes(userId);
-    return {
-      job,
-      meta:{
-        canCompleteJob:job?.status === JobStatus.inProgress && job?.assigned_to?._id?.toString() === userId?.toString(),
-        canReviewJob:job?.status === JobStatus.completed && job?.customer?._id?.toString() === userId?.toString() && !job.review,
-        canEmployeeIntract,
-      }
-    }
+  const userId = user?._id;
+  const canEmployeeIntract =
+    user?.role === "employee" &&
+    userId &&
+    !job?.assigned_to &&
+    job?.assigned_candidates?.includes(userId);
+  return {
+    job,
+    meta: {
+      canCompleteJob:
+        job?.status === JobStatus.inProgress &&
+        job?.assigned_to?._id?.toString() === userId?.toString(),
+      canReviewJob:
+        job?.status === JobStatus.completed &&
+        job?.customer?._id?.toString() === userId?.toString() &&
+        !job.review,
+      canEmployeeIntract,
+    },
+  };
 };
 
-const getAllJobsService = async ({ status, page, limit }) => {
+const getAllJobsService = async ({ status, page, limit, skip }) => {
   const filter = {};
   if (status) filter.status = status;
-
-  const skip = (page - 1) * limit;
 
   const [jobs, total] = await Promise.all([
     Job.find(filter)
@@ -82,8 +90,16 @@ const getAllJobsService = async ({ status, page, limit }) => {
       .select(["-updatedAt", "-__v"]),
     Job.countDocuments(filter),
   ]);
-
-  return { jobs, total };
+  const totalPages = Math.ceil(total / limit);
+  return {
+    jobs,
+    pagination: {
+      total,
+      page,
+      totalPages,
+      limit,
+    },
+  };
 };
 
 const createTicketService = async ({ user, job, instructions }) => {

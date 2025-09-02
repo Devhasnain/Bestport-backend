@@ -97,9 +97,37 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     let select = req.query?.select?.split(",") ?? [];
-    const products = await Product.find(req?.query ?? {}).select(select);
-    sendSuccess(res, "", products, 200);
+
+    const [products, total] = await Promise.all([
+      Product.find({})
+        .select(select)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      Product.countDocuments({}),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    sendSuccess(
+      res,
+      "",
+      {
+        products,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          limit,
+        },
+      },
+      200
+    );
   } catch (error) {
     return sendError(res, err.message);
   }

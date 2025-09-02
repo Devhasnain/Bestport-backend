@@ -11,12 +11,16 @@ const { sendSuccess, sendError } = require("../../utils");
 
 exports.getAllJobs = async (req, res) => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
+    const status = req.query.status || 'pending'
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     const result = await getAllJobsService({
       status,
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
+      skip,
     });
 
     sendSuccess(res, "", result, 200);

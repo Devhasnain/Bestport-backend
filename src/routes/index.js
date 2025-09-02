@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const pusher = require("../config/pusher");
 const { checkAccessKey } = require("../middlewares");
 const { User } = require("../schemas");
 const { testPushNotification } = require("../utils/sendPushNotification");
@@ -11,6 +10,18 @@ const notificationRoutes = require("./notificationRoutes");
 const productsRoutes = require("./productRoutes");
 const userRoutes = require("./userRoutes");
 const reviewRoutes = require("./reviewRoutes");
+const helpRoutes = require("./helpRoutes");
+
+router.use(checkAccessKey);
+router.use("/auth", authRoutes);
+router.use("/admin", adminRoutes);
+router.use("/job", jobRoutes);
+router.use("/ticket", jobTicketRoutes);
+router.use("/notification", notificationRoutes);
+router.use("/product", productsRoutes);
+router.use("/user", userRoutes);
+router.use("/review", reviewRoutes);
+router.use("/help-request", helpRoutes);
 
 router.get("/noti/:id", async (req, res) => {
   try {
@@ -24,34 +35,6 @@ router.get("/noti/:id", async (req, res) => {
   } catch (error) {
     res.send({ status: "ERROR", error });
   }
-});
-router.use(checkAccessKey);
-router.use("/auth", authRoutes);
-router.use("/admin", adminRoutes);
-router.use("/job", jobRoutes);
-router.use("/ticket", jobTicketRoutes);
-router.use("/notification", notificationRoutes);
-router.use("/product", productsRoutes);
-router.use("/user", userRoutes);
-router.use("/review", reviewRoutes);
-
-
-
-router.post('/pusher/auth', (req, res) => {
-  const socketId = req.body.socket_id;
-  const channel = req.body.channel_name;
-  const user = req.user;
-
-  const presenceData = {
-    user_id: user._id.toString(),
-    user_info: {
-      name: user.name,
-      role: user.role,
-    },
-  };
-
-  const auth = pusher.authenticate(socketId, channel, presenceData);
-  res.send(auth);
 });
 
 module.exports = router;

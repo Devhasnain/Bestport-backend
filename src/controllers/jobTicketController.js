@@ -64,12 +64,12 @@ exports.createJobTicket = async (req, res) => {
       select: ["name", "_id", "profile_img"],
     });
 
-    SocketWorker.assignJob({ ticket, userId:user?._id });
+    SocketWorker.assignJob({ ticket, userId: user?._id });
 
     await notificationQueue.add({
       data: {
-      employee: user,
-      jobId: job?._id
+        employee: user,
+        jobId: job?._id,
       },
       type: QueueJobTypes.NEW_TICKET,
     });
@@ -106,10 +106,15 @@ exports.getJobTickets = async (req, res) => {
 
 exports.getAllJobTickets = async (req, res) => {
   try {
-    let query = {};
-    if (req?.query?.status?.trim()?.length) {
-      query.status = req?.query?.status;
-    }
+    const status = req.query.status || "assigned";
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let query = {
+      status,
+    };
+
     if (req?.query?.user) {
       query.user = req?.query?.user;
     }
@@ -117,20 +122,37 @@ exports.getAllJobTickets = async (req, res) => {
       const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
       query.createdAt = { $gte: fifteenMinutesAgo };
     }
-    const tickets = await Ticket.find(query).populate([
-      {
-        path: "user",
-        select: ["name", "_id", "profile_img"],
-      },
-      {
-        path: "job",
-      },
+
+    const [tickets, total] = await Promise.all([
+      Ticket.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate([
+          {
+            path: "user",
+            select: ["name", "_id", "profile_img"],
+          },
+          {
+            path: "job",
+          },
+        ]),
+      Ticket.find({ status }),
     ]);
+
+    const totalPages = Math.ceil(total / limit);
+
     return sendSuccess(
       res,
       "",
       {
         tickets,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          limit,
+        },
       },
       201
     );
@@ -200,25 +222,6 @@ exports.acceptJobTicket = async (req, res) => {
     });
 
     sendSuccess(res, "Job has started", {}, 201);
-
-    // sendAdminPushNotification(
-    //   "Job In Progress",
-    //   `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
-    //   {
-    //     image: user?.profile_img,
-    //     redirect: `job/${job?._id}`,
-    //   }
-    // );
-
-    // sendPushNotification(
-    //   job?.customer,
-    //   `Your Job is Now in Progress`,
-    //   `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
-    //   {
-    //     image: user?.profile_img,
-    //     redirect: `JobDetail_${job?._id}`,
-    //   }
-    // );
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -230,7 +233,7 @@ exports.rejectJobTicket = async (req, res) => {
     if (!ticketId) {
       throw new Error("Ticket id is required");
     }
-    await Ticket.findByIdAndUpdate(ticketId,{status:"rejected"});
+    await Ticket.findByIdAndUpdate(ticketId, { status: "rejected" });
     sendSuccess(res, "Job ticket rejected", {}, 201);
 
     // sendAdminPushNotification(
