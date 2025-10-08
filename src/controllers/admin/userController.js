@@ -103,8 +103,26 @@ exports.getCustomers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
-    return sendSuccess(res, "", user, 201);
+    let { select, unselect } = req.query;
+
+    let projection = "";
+
+    if (select) {
+      projection = select.split(",").join(" ");
+    }
+
+    if (unselect) {
+      const unselectFields = unselect.split(",").join(" ");
+      projection += ` ${unselectFields}`;
+    }
+
+    projection += " -password";
+
+    const user = await User.findById(id).select(projection.trim());
+
+    if (!user) return sendError(res, "User not found", 404);
+
+    return sendSuccess(res, "", user, 200);
   } catch (err) {
     return sendError(res, err.message);
   }

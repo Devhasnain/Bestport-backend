@@ -22,7 +22,7 @@ const router = express.Router();
 
 router.post("/login", loginDto, dtoValidator, login);
 
-router.use(authMiddleware);
+// router.use(authMiddleware);
 router.get("/me", profile);
 
 router.get("/employees", getEmployees);
