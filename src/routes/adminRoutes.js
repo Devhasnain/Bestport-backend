@@ -1,7 +1,7 @@
 const express = require("express");
 const { loginDto, createEmployeeDto } = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
-const { login, profile } = require("../controllers/admin/authController");
+const { login, profile, DashboardAnalytics } = require("../controllers/admin/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
   getEmployees,
@@ -22,7 +22,9 @@ const router = express.Router();
 
 router.post("/login", loginDto, dtoValidator, login);
 
-// router.use(authMiddleware);
+router.use(authMiddleware);
+
+router.get("/dashboard-analytics", DashboardAnalytics);
 router.get("/me", profile);
 
 router.get("/employees", getEmployees);

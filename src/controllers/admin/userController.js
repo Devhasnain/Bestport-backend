@@ -1,5 +1,5 @@
 const { cloudinary } = require("../../config/multer");
-const { User } = require("../../schemas");
+const { User, Review, Job } = require("../../schemas");
 const { sendError, sendSuccess } = require("../../utils");
 
 exports.getEmployees = async (req, res) => {
@@ -117,12 +117,27 @@ exports.getUserById = async (req, res) => {
     }
 
     projection += " -password";
-
-    const user = await User.findById(id).select(projection.trim());
+    let user = await User.findById(id).select(projection.trim());
 
     if (!user) return sendError(res, "User not found", 404);
 
-    return sendSuccess(res, "", user, 200);
+    const reviews =
+      user?.role === "employee"
+        ? await Review.find({ employee: user?._id }).populate({
+            path: "customer",
+            select: ["_id", "name", "profile_img"],
+          })
+        : [];
+    const jobs =
+      user?.role === "employee"
+        ? await Job.find({ assigned_to: user?._id }).select([
+            "-assigned_candidates",
+          ])
+        : await Job.find({ customer: user?._id }).select([
+            "-assigned_candidates",
+          ]);
+
+    return sendSuccess(res, "", {user,reviews, jobs}, 200);
   } catch (err) {
     return sendError(res, err.message);
   }
