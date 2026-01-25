@@ -64,6 +64,7 @@ exports.googleLogin = async (req, res) => {
 
     if (findUser) {
       const token = generateToken(findUser);
+        if(findUser?.is_deleted) await User.findByIdAndUpdate(findUser._id,{is_deleted:false})
       return sendSuccess(
         res,
         "Logged in successfully",
@@ -79,6 +80,7 @@ exports.googleLogin = async (req, res) => {
         email,
         password: `new-google-user-${name}`,
       });
+      
       const token = generateToken(user);
       sendSuccess(
         res,
@@ -123,6 +125,8 @@ exports.login = async (req, res) => {
     if (!match) throw new Error("Invalid credentials");
 
     const token = generateToken(user);
+    if(user?.is_deleted) await User.findByIdAndUpdate(user._id,{is_deleted:false})
+
     return sendSuccess(
       res,
       "Logged in successfully",
