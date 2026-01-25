@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
       device_name:{type:String},
       ip_address:{type:String}
     },
+    is_deleted:{
+      type:Boolean,
+      default:false
+    },
     is_available: {
       type: Boolean,
       default: false,

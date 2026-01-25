@@ -272,3 +272,13 @@ exports.setNewPassword = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
+exports.deleteAccount = async (req,res)=>{
+  try {
+    const id = req.user;
+    await User.findByIdAndUpdate(id,{is_deleted:true});
+    return sendSuccess(res, "Account deleted successfully",{},201)
+  } catch (err) {
+    return sendError(res,err.message)
+  }
+}
