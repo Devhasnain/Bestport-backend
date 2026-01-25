@@ -11,6 +11,7 @@ const {
   verifyEmailOtp,
   setNewPassword,
   registerDevice,
+  deleteAccount,
 } = require("../controllers/authController");
 const {
   registerDto,
@@ -31,6 +32,7 @@ router.post("/register", registerDto, dtoValidator, register);
 router.post("/login", loginDto, dtoValidator, login);
 router.post("/google-auth", googleAuthDto, dtoValidator, googleLogin);
 router.get("/me", authMiddleware, profile);
+router.delete("/delete-account", authMiddleware, deleteAccount);
 router.put("/edit-name", authMiddleware, editNameDto, dtoValidator, editProfile);
 router.put("/edit-email", authMiddleware, editEmailDto, dtoValidator, editProfile);
 router.put(
