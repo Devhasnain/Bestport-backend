@@ -1,16 +1,16 @@
-const { User, Job } = require("../../schemas");
+const { User, Job, ApiKey } = require("../../schemas");
 const {
   sendSuccess,
   matchPassword,
   generateToken,
   sendError,
 } = require("../../utils");
-
+const generateApiKey = require("../../utils/generateApiKey");
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, role:"admin"});
+    const user = await User.findOne({ email, role: "admin" });
     if (!user) throw new Error("Invalid credentials");
 
     const match = await matchPassword(password, user.password);
@@ -51,9 +51,15 @@ exports.DashboardAnalytics = async (req, res) => {
     const customers = await User.countDocuments({ role: "customer" });
     const employees = await User.countDocuments({ role: "employee" });
     const pendingJobs = await Job.countDocuments({ status: "pending" });
-    const completedJobsCount = await Job.countDocuments({ status: "completed" });
-    const inprogressJobsCount = await Job.countDocuments({ status: "in-progress" });
-    const cancelledJobsCount = await Job.countDocuments({ status: "cancelled" });
+    const completedJobsCount = await Job.countDocuments({
+      status: "completed",
+    });
+    const inprogressJobsCount = await Job.countDocuments({
+      status: "in-progress",
+    });
+    const cancelledJobsCount = await Job.countDocuments({
+      status: "cancelled",
+    });
     const totalJobsCount = await Job.countDocuments();
 
     // Aggregate completed jobs by month
@@ -68,7 +74,7 @@ exports.DashboardAnalytics = async (req, res) => {
         },
       },
       {
-        $sort: { "_id": 1 },
+        $sort: { _id: 1 },
       },
     ]);
 
@@ -89,7 +95,7 @@ exports.DashboardAnalytics = async (req, res) => {
         completedJobs, // this will be used for chart
         employees,
         cancelledJobsCount,
-        totalJobsCount
+        totalJobsCount,
       },
       200
     );
@@ -97,7 +103,6 @@ exports.DashboardAnalytics = async (req, res) => {
     return sendError(res, err.message);
   }
 };
-
 
 exports.setFcm = async (req, res) => {
   try {
@@ -114,6 +119,65 @@ exports.setFcm = async (req, res) => {
 exports.getFcm = async (req, res) => {
   try {
     return sendSuccess(res, "", req.user.fcm_token, 201);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.getApiKeys = async (_, res) => {
+  try {
+  const apiKeys = await ApiKey.find({})
+  .select(['key','name','_id','createdAt','created_by'])
+  .populate({
+    path:"created_by",
+    select:'name profile_img'
+  })
+    return sendSuccess(
+      res,
+      "",
+      {api_keys:apiKeys},
+      201
+    );
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.createApiKey = async (req, res) => {
+  try {
+    const user = req.user;
+    const { name } = req.body;
+    const apiKey = await generateApiKey(name, user._id);
+    return sendSuccess(
+      res,
+      "",
+      {
+        key: apiKey.key,
+        name,
+        _id: apiKey._id,
+        created_by: {
+          name: user?.name,
+          profile_img: user?.profile_img,
+        },
+        createdAt: apiKey.createdAt,
+      },
+      201
+    );
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.deleteApiKey = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await ApiKey.findByIdAndDelete(id);
+    return sendSuccess(
+      res,
+      "Api key deleted successfully.",
+      {},
+      201
+    );
   } catch (err) {
     return sendError(res, err.message);
   }

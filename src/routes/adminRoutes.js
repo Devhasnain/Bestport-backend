@@ -1,7 +1,7 @@
 const express = require("express");
 const { loginDto, createEmployeeDto } = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
-const { login, profile, DashboardAnalytics } = require("../controllers/admin/authController");
+const { login, profile, DashboardAnalytics, getApiKeys, createApiKey, deleteApiKey } = require("../controllers/admin/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
   getEmployees,
@@ -31,6 +31,9 @@ router.get("/employees", getEmployees);
 router.get("/employees-list", getAllEmployeesList);
 router.get("/customers", getCustomers);
 router.get("/user/:id", getUserById);
+router.get("/get-api-keys", getApiKeys);
+router.post("/create-api-key", createApiKey);
+router.delete("/delete-api-key/:id", deleteApiKey);
 
 router.get("/jobs", getAllJobs);
 router.get("/jobs/:id", getJobById);
