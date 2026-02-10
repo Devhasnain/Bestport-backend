@@ -139,6 +139,7 @@ exports.appleLogin = async (req, res) => {
         apple_sub: appleSub,
         email: email || null,
         name: email?.split("@")[0] || null,
+        password: `new-apple-user-${email?.split("@")[0] || "user"}`,
       });
     }
 
