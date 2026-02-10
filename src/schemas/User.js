@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: "customer",
     },
+    apple_sub: { type: String, default: null },
     date_of_birth: { type: Date },
     position: String,
     about: String,

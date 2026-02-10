@@ -12,6 +12,7 @@ const {
   setNewPassword,
   registerDevice,
   deleteAccount,
+  appleLogin,
 } = require("../controllers/authController");
 const {
   registerDto,
@@ -23,6 +24,7 @@ const {
   sendOtpEmailDtp,
   verifyEmailOtpDto,
   setNewPasswordDto,
+  appleAuthDto,
 } = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -31,6 +33,7 @@ const router = Router();
 router.post("/register", registerDto, dtoValidator, register);
 router.post("/login", loginDto, dtoValidator, login);
 router.post("/google-auth", googleAuthDto, dtoValidator, googleLogin);
+router.post("/apple-auth", appleAuthDto, dtoValidator, appleLogin);
 router.get("/me", authMiddleware, profile);
 router.delete("/delete-account", authMiddleware, deleteAccount);
 router.put("/edit-name", authMiddleware, editNameDto, dtoValidator, editProfile);
