@@ -1,5 +1,5 @@
 const express = require("express");
-const { loginDto, createEmployeeDto } = require("../validators/auth");
+const { loginDto, createEmployeeDto, updateProfileDto } = require("../validators/auth");
 const { dtoValidator } = require("../middlewares");
 const { login, profile, DashboardAnalytics, getApiKeys, createApiKey, deleteApiKey } = require("../controllers/admin/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -10,6 +10,7 @@ const {
   createEmployee,
   editEmployee,
   getAllEmployeesList,
+  updateProfile,
 } = require("../controllers/admin/userController");
 const {
   getAllJobs,
@@ -42,5 +43,6 @@ router.delete("/jobs/delete", deleteJob);
 router.post("/create-job-ticket", createJobTicket);
 router.post("/create-employee", UsersImageUploader, createEmployeeDto, dtoValidator, createEmployee)
 router.put("/update-employee", UsersImageUploader, createEmployeeDto, dtoValidator, editEmployee)
+router.put("/update-profile/:id", updateProfileDto, dtoValidator, updateProfile)
 
 module.exports = router;

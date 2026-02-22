@@ -221,3 +221,28 @@ exports.editEmployee = async (req, res) => {
     sendError(res, err.message);
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const {name,phone,about} = req.body;
+    if (!id || !id?.trim()?.length) {
+      throw new Error("Employee id is required");
+    }
+
+    await User.findByIdAndUpdate({
+      name,
+      phone,
+      about
+    })
+
+    sendSuccess(
+      res,
+      "Profile updated successfully.",
+      {},
+      200
+    );
+  } catch (err) {
+    sendError(res, err.message);
+  }
+};
