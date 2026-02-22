@@ -230,7 +230,7 @@ exports.updateProfile = async (req, res) => {
       throw new Error("Employee id is required");
     }
 
-    await User.findByIdAndUpdate({
+    await User.findByIdAndUpdate(id,{
       name,
       phone,
       about
