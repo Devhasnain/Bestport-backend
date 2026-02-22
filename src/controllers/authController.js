@@ -14,6 +14,7 @@ const {
   sendPushNotification,
 } = require("../utils/sendPushNotification");
 const JWT = require("jsonwebtoken");
+const { verifyAppleIdentityToken } = require("../utils/verifyAppleToken");
 require("dotenv").config();
 
 exports.register = async (req, res) => {
@@ -64,7 +65,8 @@ exports.googleLogin = async (req, res) => {
 
     if (findUser) {
       const token = generateToken(findUser);
-        if(findUser?.is_deleted) await User.findByIdAndUpdate(findUser._id,{is_deleted:false})
+      if (findUser?.is_deleted)
+        await User.findByIdAndUpdate(findUser._id, { is_deleted: false });
       return sendSuccess(
         res,
         "Logged in successfully",
@@ -75,12 +77,12 @@ exports.googleLogin = async (req, res) => {
       );
     } else {
       const user = await User.create({
-        profile_img:{path:profile_img},
+        profile_img: { path: profile_img },
         name,
         email,
         password: `new-google-user-${name}`,
       });
-      
+
       const token = generateToken(user);
       sendSuccess(
         res,
@@ -115,6 +117,46 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
+exports.appleLogin = async (req, res) => {
+  try {
+    const { identityToken } = req.body;
+
+    const appleData = await verifyAppleIdentityToken(identityToken);
+    const appleSub = appleData.sub;
+    const email = appleData.email;
+
+    let user = await User.findOne({
+      $or: [{ apple_sub: appleSub }, { email: email }],
+    });
+
+    if (user) {
+      if (!user.apple_sub) {
+        user.apple_sub = appleSub;
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        apple_sub: appleSub,
+        email: email || null,
+        name: email?.split("@")[0] || null,
+        password: `new-apple-user-${email?.split("@")[0] || "user"}`,
+      });
+    }
+
+    if (user.is_deleted) {
+      user.is_deleted = false;
+      await user.save();
+    }
+
+    const token = generateToken(user);
+
+    return sendSuccess(res, "Logged in successfully", { token }, 201);
+  } catch (error) {
+    console.error("Apple login error:", error);
+    return sendError(res, error.message);
+  }
+};
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -125,7 +167,8 @@ exports.login = async (req, res) => {
     if (!match) throw new Error("Invalid credentials");
 
     const token = generateToken(user);
-    if(user?.is_deleted) await User.findByIdAndUpdate(user._id,{is_deleted:false})
+    if (user?.is_deleted)
+      await User.findByIdAndUpdate(user._id, { is_deleted: false });
 
     return sendSuccess(
       res,
@@ -277,12 +320,12 @@ exports.setNewPassword = async (req, res) => {
   }
 };
 
-exports.deleteAccount = async (req,res)=>{
+exports.deleteAccount = async (req, res) => {
   try {
     const id = req.user;
-    await User.findByIdAndUpdate(id,{is_deleted:true});
-    return sendSuccess(res, "Account deleted successfully",{},201)
+    await User.findByIdAndUpdate(id, { is_deleted: true });
+    return sendSuccess(res, "Account deleted successfully", {}, 201);
   } catch (err) {
-    return sendError(res,err.message)
+    return sendError(res, err.message);
   }
-}
+};

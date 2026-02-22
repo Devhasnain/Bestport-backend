@@ -140,6 +140,14 @@ const googleAuthDto = [
     .withMessage("Name must be at least 2 characters"),
 ];
 
+const appleAuthDto = [
+  body("identityToken")
+    .notEmpty()
+    .withMessage("Apple sign in token is required")
+    .isLength({ min: 10 })
+    .withMessage("Invalid Apple sign in token")
+];
+
 const editEmailDto = [
   body("email")
     .trim()
@@ -262,5 +270,6 @@ module.exports = {
   verifyEmailOtpDto,
   setNewPasswordDto,
   createEmployeeDto,
-  updateProfileDto
+  updateProfileDto,
+  appleAuthDto,
 };
