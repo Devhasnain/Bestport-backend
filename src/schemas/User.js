@@ -50,7 +50,15 @@ const userSchema = new mongoose.Schema(
     is_available: {
       type: Boolean,
       default: false,
-    }
+    },
+    is_online: {
+      type: Boolean,
+      default: false,
+    },
+    last_heartbeat: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -66,5 +74,7 @@ userSchema.pre("save", async function (next) {
     next(err);
   }
 });
+
+userSchema.index({ is_online: 1, last_heartbeat: 1 });
 
 module.exports = mongoose.model("User", userSchema);

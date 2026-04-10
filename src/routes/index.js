@@ -11,6 +11,7 @@ const productsRoutes = require("./productRoutes");
 const userRoutes = require("./userRoutes");
 const reviewRoutes = require("./reviewRoutes");
 const helpRoutes = require("./helpRoutes");
+const onlineRoutes = require("./onlineStatusRoutes" );
 
 router.use(checkAccessKey);
 router.use("/auth", authRoutes);
@@ -22,6 +23,7 @@ router.use("/product", productsRoutes);
 router.use("/user", userRoutes);
 router.use("/review", reviewRoutes);
 router.use("/help-request", helpRoutes);
+router.use("/online", onlineRoutes);
 
 router.get("/noti/:id", async (req, res) => {
   try {
