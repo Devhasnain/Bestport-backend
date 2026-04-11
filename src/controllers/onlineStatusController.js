@@ -9,7 +9,7 @@ exports.updateOnlineStatus = async (req, res) => {
       is_online,
       last_heartbeat: is_online ? new Date() : null,
     });
-    return sendSuccess(res, "Updated online status", {id:user?._id}, 201);
+    return sendSuccess(res, "Updated online status", { id: user?._id }, 201);
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -19,9 +19,30 @@ exports.updateHeartBeat = async (req, res) => {
   try {
     const user = req.user;
     await User.findByIdAndUpdate(user?._id, {
-      last_heartbeat:  new Date()
+      last_heartbeat: new Date(),
     });
-    return sendSuccess(res, "Updated last heartbeat", {id:user?._id}, 201);
+    return sendSuccess(res, "Updated last heartbeat", { id: user?._id }, 201);
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
+exports.getOnlineUsers = async (req, res) => {
+  try {
+    const onlineUsers = await User.find({
+      is_online: true,
+      role: "employee",
+    }).select([
+      "name",
+      "email",
+      "position",
+      "profile_img",
+      "is_online",
+      "last_heartbeat",
+      "is_available",
+      "rating",
+    ]);
+    return sendSuccess(res, "Retrieved online users", onlineUsers, 200);
   } catch (err) {
     return sendError(res, err.message);
   }

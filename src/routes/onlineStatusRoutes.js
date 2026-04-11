@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { updateOnlineStatus, updateHeartBeat } = require("../controllers/onlineStatusController");
+const { updateOnlineStatus, updateHeartBeat} = require("../controllers/onlineStatusController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = Router();
 router.put("/update", authMiddleware, updateOnlineStatus);

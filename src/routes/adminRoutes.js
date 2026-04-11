@@ -19,6 +19,7 @@ const {
   deleteJob,
 } = require("../controllers/admin/jobController");
 const { UsersImageUploader } = require("../config/multer");
+const { getOnlineUsers } = require("../controllers/onlineStatusController");
 const router = express.Router();
 
 router.post("/login", loginDto, dtoValidator, login);
@@ -44,5 +45,8 @@ router.post("/create-job-ticket", createJobTicket);
 router.post("/create-employee", UsersImageUploader, createEmployeeDto, dtoValidator, createEmployee)
 router.put("/update-employee", UsersImageUploader, createEmployeeDto, dtoValidator, editEmployee)
 router.put("/update-profile/:id", updateProfileDto, dtoValidator, updateProfile)
+
+router.get("/online-users", getOnlineUsers)
+
 
 module.exports = router;
