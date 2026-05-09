@@ -4,8 +4,6 @@ const bodyParser = require("body-parser");
 const helmet = require("helmet"); // Security headers
 const compression = require("compression"); // GZIP compression
 const rateLimit = require("express-rate-limit"); // Prevent brute-force
-// const mongoSanitize = require("express-mongo-sanitize"); // Prevent NoSQL injection
-// const xssClean = require("xss-clean"); // Prevent XSS attacks
 const hpp = require("hpp"); // Prevent HTTP parameter pollution
 const morgan = require("morgan");
 const routes = require("./routes/index");
@@ -51,10 +49,6 @@ app.use(compression());
 app.set("etag", "strong");
 app.use(responseTime());
 
-// Security Parsing
-// app.use(mongoSanitize({ replaceWith: "_" }));
-// app.use(xssClean());
-
 // -------------------- CORS --------------------
 app.use(
   cors({
@@ -76,19 +70,6 @@ app.use(limiter);
 // -------------------- Body Parsing --------------------
 app.use(bodyParser.urlencoded({ extended: true, limit: "30mb" }));
 app.use(bodyParser.json({ limit: "30mb" }));
-
-// -------------------- Health Check --------------------
-app.get("/health", async (req, res) => {
-  await notificationQueue.add({
-    type: QueueJobTypes.TEST,
-    data: {
-      token:"dLZBMnqMQmC2FtQHs03Nw_:APA91bEldOb2JZHVfUkZ6AII1doNoF6_Om-gedWt6Buo-Dm_IAUwVuVlXiO_c2gxuWyJduDpX1s_QpI9aZwP5HygF8rb0WHGlE-5DTRDui9kgeVI-NaX47s",
-      title: "Test notification",
-      body: "Test push notification",
-    },
-  });
-  res.send({ status: "OK" });
-});
 
 // -------------------- API Routes --------------------
 app.use("/api/v1", routes);

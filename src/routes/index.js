@@ -11,7 +11,11 @@ const productsRoutes = require("./productRoutes");
 const userRoutes = require("./userRoutes");
 const reviewRoutes = require("./reviewRoutes");
 const helpRoutes = require("./helpRoutes");
-const onlineRoutes = require("./onlineStatusRoutes" );
+const onlineRoutes = require("./onlineStatusRoutes");
+const invoiceRoutes = require("./invoiceRoutes");
+const {
+  sendTestNotification,
+} = require("../controllers/notificationController");
 
 router.use(checkAccessKey);
 router.use("/auth", authRoutes);
@@ -24,19 +28,9 @@ router.use("/user", userRoutes);
 router.use("/review", reviewRoutes);
 router.use("/help-request", helpRoutes);
 router.use("/online", onlineRoutes);
+router.use("/invoice", invoiceRoutes);
 
-router.get("/noti/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params?.id);
-    testPushNotification(
-      user?.device?.fcm_token,
-      "Test notification",
-      "Testing notifications sending and receiving."
-    );
-    res.send({ status: "OK" });
-  } catch (error) {
-    res.send({ status: "ERROR", error });
-  }
-});
+
+router.get("/noti/:id", sendTestNotification);
 
 module.exports = router;

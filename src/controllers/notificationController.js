@@ -1,5 +1,6 @@
-const { Notification } = require("../schemas");
+const { Notification, User } = require("../schemas");
 const { sendError, sendSuccess } = require("../utils");
+const { testPushNotification } = require("../utils/sendPushNotification");
 
 exports.getNotifications = async (req, res) => {
   try {
@@ -55,3 +56,17 @@ exports.setNotificationSeen = async (req, res) => {
     return sendError(res, err.message);
   }
 };
+
+exports.sendTestNotification = async (req, res) => {
+  try {
+    const user = await User.findById(req.params?.id);
+    testPushNotification(
+      user?.device?.fcm_token,
+      "Test notification",
+      "Testing notifications sending and receiving."
+    );
+    res.send({ status: "OK" });
+  } catch (error) {
+    res.send({ status: "ERROR", error });
+  }
+}

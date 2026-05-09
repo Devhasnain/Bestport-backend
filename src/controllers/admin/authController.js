@@ -1,4 +1,4 @@
-const { User, Job, ApiKey } = require("../../schemas");
+const { User, Job, ApiKey, Invoice } = require("../../schemas");
 const {
   sendSuccess,
   matchPassword,
@@ -61,6 +61,30 @@ exports.DashboardAnalytics = async (req, res) => {
       status: "cancelled",
     });
     const totalJobsCount = await Job.countDocuments();
+    const totalInvoicesCount = await Invoice.countDocuments();
+
+    const invoicesTotals = await Invoice.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$amountReceived" },
+          totalMaterialCost: { $sum: "$totalMaterialCost" },
+          totalInvoices: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalRevenue: 1,
+          totalMaterialCost: 1,
+          totalInvoices: 1,
+
+          totalProfit: {
+            $subtract: ["$totalRevenue", "$totalMaterialCost"],
+          },
+        },
+      },
+    ]);
 
     // Aggregate completed jobs by month
     const monthlyCompletedJobs = await Job.aggregate([
@@ -96,6 +120,10 @@ exports.DashboardAnalytics = async (req, res) => {
         employees,
         cancelledJobsCount,
         totalJobsCount,
+        totalInvoicesCount,
+        totalRevenue: invoicesTotals[0]?.totalRevenue || 0,
+        totalMaterialCost: invoicesTotals[0]?.totalMaterialCost || 0,
+        totalProfit: invoicesTotals[0]?.totalProfit || 0,
       },
       200
     );
@@ -126,18 +154,13 @@ exports.getFcm = async (req, res) => {
 
 exports.getApiKeys = async (_, res) => {
   try {
-  const apiKeys = await ApiKey.find({})
-  .select(['key','name','_id','createdAt','created_by'])
-  .populate({
-    path:"created_by",
-    select:'name profile_img'
-  })
-    return sendSuccess(
-      res,
-      "",
-      {api_keys:apiKeys},
-      201
-    );
+    const apiKeys = await ApiKey.find({})
+      .select(["key", "name", "_id", "createdAt", "created_by"])
+      .populate({
+        path: "created_by",
+        select: "name profile_img",
+      });
+    return sendSuccess(res, "", { api_keys: apiKeys }, 201);
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -172,12 +195,7 @@ exports.deleteApiKey = async (req, res) => {
   try {
     const { id } = req.params;
     await ApiKey.findByIdAndDelete(id);
-    return sendSuccess(
-      res,
-      "Api key deleted successfully.",
-      {},
-      201
-    );
+    return sendSuccess(res, "Api key deleted successfully.", {}, 201);
   } catch (err) {
     return sendError(res, err.message);
   }
