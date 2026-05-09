@@ -15,26 +15,10 @@ const SocketWorker = require("../workers/socketWorker");
 exports.createJobTicket = async (req, res) => {
   try {
     const user = await User.findById(req.body.user);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const isTicketAlreadyAssigned = await Ticket.findOne({
-      user: user?._id,
-      job: req.body?.job,
-      status: JobTicketStatus.assigned,
-    });
-
-    if (isTicketAlreadyAssigned) {
-      throw new Error("Job ticket is already assigned and is pending");
-    }
+    if (!user) throw new Error("User not found");
 
     const job = await Job.findById(req.body.job);
-
-    if (!job) {
-      throw new Error("job not found");
-    }
+    if (!job) throw new Error("Job not found");
 
     if (
       job?.status === JobStatus.assigned ||
@@ -43,19 +27,43 @@ exports.createJobTicket = async (req, res) => {
       throw new Error("Job is already assigned and in progress");
     }
 
-    if (job?.status === JobStatus.inProgress) {
-      throw new Error("Job is already assigned and in progress");
-    }
-
     if (
       job?.status === JobStatus.completed ||
       job?.status === JobStatus.cancelled
     ) {
-      throw new Error("Job is not available, Already completed or closed");
+      throw new Error("Job is not available, already completed or closed");
     }
 
-    job.assigned_candidates.push(user);
-    await job.save();
+    // --- 15 minute expiry check ---
+    const existingTicket = await Ticket.findOne({
+      user: user._id,
+      job: job._id,
+      status: JobTicketStatus.assigned,
+    });
+
+    if (existingTicket) {
+      const now = new Date();
+      const createdAt = new Date(existingTicket.createdAt);
+      const diffInMinutes = (now - createdAt) / (1000 * 60);
+
+      if (diffInMinutes > 15) {
+        // 15 minute se zyada purana — delete karo or naya banao
+        await Ticket.findByIdAndDelete(existingTicket._id);
+      } else {
+        // abhi bhi valid hai — error return karo
+        const remainingSeconds = Math.ceil((15 - diffInMinutes) * 60);
+        const remainingMinutes = Math.ceil(remainingSeconds / 60);
+        throw new Error(
+          `Job ticket already exists. Please wait ${remainingMinutes} minute(s) before reassigning.`
+        );
+      }
+    }
+    // ------------------------------
+
+    if (!job.assigned_candidates.includes(user._id)) {
+      job.assigned_candidates.push(user._id);
+      await job.save();
+    }
 
     const ticket = await (
       await Ticket.create({ user, job })
@@ -63,8 +71,6 @@ exports.createJobTicket = async (req, res) => {
       path: "user",
       select: ["name", "_id", "profile_img"],
     });
-
-    SocketWorker.assignJob({ ticket, userId: user?._id });
 
     await notificationQueue.add({
       data: {
@@ -74,7 +80,7 @@ exports.createJobTicket = async (req, res) => {
       type: QueueJobTypes.NEW_TICKET,
     });
 
-    sendSuccess(res, "", ticket, 200);
+    sendSuccess(res, "Job ticket created successfully", ticket, 200);
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -106,47 +112,69 @@ exports.getJobTickets = async (req, res) => {
 
 exports.getAllJobTickets = async (req, res) => {
   try {
-    const status = req.query.status || "assigned";
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const status =
+      req.query.status || "assigned";
+
+    const page = Math.max(
+      parseInt(req.query.page) || 1,
+      1
+    );
+
+    const limit = Math.max(
+      parseInt(req.query.limit) || 10,
+      1
+    );
+
     const skip = (page - 1) * limit;
 
-    let query = {
-      status,
-    };
+    const query = { status };
 
-    if (req?.query?.user) {
-      query.user = req?.query?.user;
-    }
-    if (req?.query?.active === "true") {
-      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-      query.createdAt = { $gte: fifteenMinutesAgo };
+    if (req.query.user) {
+      query.user = req.query.user;
     }
 
-    const [tickets, total] = await Promise.all([
-      Ticket.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate([
-          {
-            path: "user",
-            select: ["name", "_id", "profile_img"],
-          },
-          {
-            path: "job",
-          },
-        ]),
-      Ticket.find({ status }),
-    ]);
+    if (req.query.active === "true") {
+      const fifteenMinutesAgo =
+        new Date(Date.now() - 15 * 60 * 1000);
 
-    const totalPages = Math.ceil(total / limit);
+      query.createdAt = {
+        $gte: fifteenMinutesAgo,
+      };
+    }
+
+    const [tickets, total] =
+      await Promise.all([
+        Ticket.find(query)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate([
+            {
+              path: "user",
+              select: [
+                "name",
+                "_id",
+                "profile_img",
+              ],
+            },
+            {
+              path: "job",
+            },
+          ]),
+
+        Ticket.countDocuments(query),
+      ]);
+
+    const totalPages = Math.ceil(
+      total / limit
+    );
 
     return sendSuccess(
       res,
       "",
       {
         tickets,
+
         pagination: {
           total,
           page,
@@ -154,10 +182,11 @@ exports.getAllJobTickets = async (req, res) => {
           limit,
         },
       },
-      201
+      200
     );
   } catch (err) {
     console.log(err);
+
     return sendError(res, err.message);
   }
 };

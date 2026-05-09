@@ -99,11 +99,15 @@ exports.getAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const search = String(req?.query?.search || "");
     const skip = (page - 1) * limit;
     let select = req.query?.select?.split(",") ?? [];
-
+    const query = {};
+    if (search !== "undefined" && search.trim()?.length) {
+      query.$text = { $search: search };
+    }
     const [products, total] = await Promise.all([
-      Product.find({})
+      Product.find(query)
         .select(select)
         .sort({ createdAt: -1 })
         .skip(skip)

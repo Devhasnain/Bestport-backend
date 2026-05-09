@@ -17,6 +17,10 @@ const serverAdapter = require("./queues/bullBoard");
 const responseTime = require("response-time");
 const app = express();
 
+app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+}
+
 app.use(
   "/admin/queues",
   basicAuth({
@@ -41,9 +45,7 @@ app.use(helmet(
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.disable("x-powered-by");
 app.set('trust proxy', 1);
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+
 // -------------------- Performance Middlewares --------------------
 app.use(compression());
 app.set("etag", "strong");

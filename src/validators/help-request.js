@@ -8,6 +8,10 @@ const helpRequestDto = [
     .isLength({ min: 5, max: 150 })
     .withMessage("Subject must be between 5 and 150 characters"),
 
+    body('phone')
+    .notEmpty().withMessage('Phone number is required')
+    .isMobilePhone('any').withMessage('Please enter a valid mobile phone number'),
+
   body("message")
     .trim()
     .notEmpty()

@@ -1,6 +1,7 @@
 const { QueueJobTypes, JobStatus } = require("../config/constants");
 const notificationQueue = require("../queues/notificationQueue");
 const { Job, User, Product } = require("../schemas");
+const Invoice = require("../schemas/Invoice");
 const {
   getJobsService,
   createJobService,
@@ -32,10 +33,8 @@ exports.createJob = async (req, res) => {
 
 exports.completeJob = async (req, res) => {
   try {
-    const jobId = req.query.id;
-    if (!jobId) {
-      throw new Error("Job id is required.");
-    }
+    const { jobId, customerId, employeeId, receivedAmount, products } =
+      req.body;
 
     const job = await Job.findById(jobId);
 
@@ -48,9 +47,28 @@ exports.completeJob = async (req, res) => {
     }
 
     job.status = JobStatus.completed;
-    job.products = req.body.products ?? [];
+    job.products = products?.length
+      ? products.map((item) => ({
+          product: item?.product?._id,
+          quantity: item?.quantity,
+        }))
+      : [];
 
     await job.save();
+
+    await Invoice.create({
+      job: jobId,
+      employee: employeeId,
+      customer: customerId,
+      products: products?.length
+        ? products?.map((item) => ({
+            title: item?.product?.title,
+            price: item?.product?.price,
+            quantity: item?.quantity,
+          }))
+        : [],
+      amountReceived: receivedAmount,
+    });
 
     const customer = await User.findById(job.customer).select(["-password"]);
     const employee = await User.findById(job.assigned_to).select(["-password"]);
@@ -95,17 +113,22 @@ exports.completeJob = async (req, res) => {
 exports.getJobs = async (req, res) => {
   try {
     const user = req.user;
+    const { status, page = 1, limit = 10 } = req.query;
+
     let query = {};
-    if(req.query?.status){
-      if(req.query?.status === "in_progress"){
-      query.status = JobStatus.inProgress
-      }else{
-        query.status=req.query?.status
-      }
+    if (status && status !== "all") {
+      query.status = status;
     }
-    const jobs = await getJobsService(user?._id, query);
-    sendSuccess(res, "", jobs, 200);
+
+    const { jobs, pagination } = await getJobsService(
+      user?._id,
+      query,
+      Number(page),
+      Number(limit)
+    );
+    sendSuccess(res, "", { jobs, pagination }, 200);
   } catch (err) {
+    console.log(err);
     return sendError(res, err.message);
   }
 };
@@ -114,9 +137,10 @@ exports.getJobById = async (req, res) => {
   try {
     const user = req.user;
     const { id } = req.params;
-    const job = await getJobService(id,user);
+    const job = await getJobService(id, user);
     sendSuccess(res, "", job, 200);
   } catch (err) {
+    console.log(err);
     return sendError(res, err.message);
   }
 };

@@ -7,5 +7,6 @@ const Notification = require("./Notification");
 const Product = require("./Product");
 const HelpRequest = require("./HelpRequest");
 const ApiKey = require("./ApiKey");
+const Invoice = require("./Invoice");
 
 module.exports = { User, Job, Review,Ticket, Otp,Notification, Product,HelpRequest, ApiKey};

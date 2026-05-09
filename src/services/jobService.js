@@ -1,27 +1,45 @@
-const { JobStatus } = require("../config/constants");
+const { JobStatus, JobTicketStatus } = require("../config/constants");
 const { Job, Ticket } = require("../schemas");
 
-const getJobsService = async (userId, query = {}) => {
+const getJobsService = async (userId, query = {}, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
   const filters = {
     $or: [{ customer: userId }, { assigned_to: userId }],
     ...query,
   };
-  return await Job.find(filters)
-    .sort({ createdAt: -1 })
-    .populate([
-      { path: "customer", select: "_id name profile_img" },
-      { path: "assigned_to", select: "_id name profile_img" },
-      {
-        path: "review",
-        populate: {
-          path: "employee",
-          select: "_id name profile_img",
-        },
-      },
-    ])
-    .select(["-updatedAt", "-__v"]);
-};
 
+  const [jobs, total] = await Promise.all([
+    Job.find(filters)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate([
+        { path: "customer", select: "_id name profile_img" },
+        { path: "assigned_to", select: "_id name profile_img" },
+        {
+          path: "review",
+          populate: {
+            path: "employee",
+            select: "_id name profile_img",
+          },
+        },
+      ])
+      .select(["-updatedAt", "-__v"]),
+
+    Job.countDocuments(filters),
+  ]);
+
+  return {
+    jobs,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
 const createJobService = async (data) => {
   return await (
     await Job.create(data)
@@ -46,23 +64,52 @@ const getJobService = async (jobid, user) => {
       { path: "products.product", select: "_id title description price image" },
     ])
     .select(["-updatedAt", "-__v"]);
-  const userId = user?._id;
-  const canEmployeeIntract =
-    user?.role === "employee" &&
-    userId &&
-    !job?.assigned_to &&
-    job?.assigned_candidates?.includes(userId);
+
+  if (!job) throw new Error("Job not found");
+
+  const userId = user?._id?.toString();
+  const isEmployee = user?.role === "employee";
+  const isCustomer = user?.role === "customer";
+  const isAssignedEmployee = job?.assigned_to?._id?.toString() === userId;
+
+  // --- Ticket (sirf employee ke liye fetch karo) ---
+  let ticket = null;
+  let canEmployeeInteract = false;
+
+  if (isEmployee) {
+    ticket = await Ticket.findOne({
+      user: user._id,
+      job: job._id,
+    })
+      .sort({ createdAt: -1 })   // latest ticket lo
+      .select("-__v -updatedAt")
+      .lean();
+
+    const ticketExpired =
+      ticket && (Date.now() - new Date(ticket.createdAt).getTime()) > 15 * 60 * 1000;
+
+    canEmployeeInteract =
+      !!ticket &&
+      ticket.status === JobTicketStatus.assigned &&
+      !ticketExpired;
+  }
+
   return {
     job,
+    ticket: canEmployeeInteract ? ticket : null,
     meta: {
       canCompleteJob:
-        job?.status === JobStatus.inProgress &&
-        job?.assigned_to?._id?.toString() === userId?.toString(),
+        isEmployee &&
+        isAssignedEmployee &&
+        job?.status === JobStatus.inProgress,
+
       canReviewJob:
+        isCustomer &&
         job?.status === JobStatus.completed &&
-        job?.customer?._id?.toString() === userId?.toString() &&
+        job?.customer?._id?.toString() === userId &&
         !job.review,
-      canEmployeeIntract,
+
+      canEmployeeInteract,
     },
   };
 };

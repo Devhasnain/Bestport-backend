@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const helpRequestSchema = new mongoose.Schema(
   {
+    ticketId: { required: true, unique: true, type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -11,6 +12,9 @@ const helpRequestSchema = new mongoose.Schema(
       required: true,
       trim: true,
       maxlength: 150,
+    },
+    phone: {
+      type: String,
     },
     message: {
       type: String,
