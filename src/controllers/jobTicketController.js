@@ -112,18 +112,11 @@ exports.getJobTickets = async (req, res) => {
 
 exports.getAllJobTickets = async (req, res) => {
   try {
-    const status =
-      req.query.status || "assigned";
+    const status = req.query.status || "assigned";
 
-    const page = Math.max(
-      parseInt(req.query.page) || 1,
-      1
-    );
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
 
-    const limit = Math.max(
-      parseInt(req.query.limit) || 10,
-      1
-    );
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
 
     const skip = (page - 1) * limit;
 
@@ -134,40 +127,32 @@ exports.getAllJobTickets = async (req, res) => {
     }
 
     if (req.query.active === "true") {
-      const fifteenMinutesAgo =
-        new Date(Date.now() - 15 * 60 * 1000);
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
 
       query.createdAt = {
         $gte: fifteenMinutesAgo,
       };
     }
 
-    const [tickets, total] =
-      await Promise.all([
-        Ticket.find(query)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .populate([
-            {
-              path: "user",
-              select: [
-                "name",
-                "_id",
-                "profile_img",
-              ],
-            },
-            {
-              path: "job",
-            },
-          ]),
+    const [tickets, total] = await Promise.all([
+      Ticket.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate([
+          {
+            path: "user",
+            select: ["name", "_id", "profile_img"],
+          },
+          {
+            path: "job",
+          },
+        ]),
 
-        Ticket.countDocuments(query),
-      ]);
+      Ticket.countDocuments(query),
+    ]);
 
-    const totalPages = Math.ceil(
-      total / limit
-    );
+    const totalPages = Math.ceil(total / limit);
 
     return sendSuccess(
       res,
@@ -229,6 +214,18 @@ exports.acceptJobTicket = async (req, res) => {
     }
     const ticket = await Ticket.findById(ticketId);
 
+    if (ticket.status !== JobTicketStatus.assigned) {
+      throw new Error("Ticket is not in assigned status");
+    }
+
+    if (ticket.status === JobTicketStatus.rejected) {
+      throw new Error("Ticket has already been rejected");
+    }
+
+    if (ticket.status === JobTicketStatus.accepted) {
+      throw new Error("Ticket has already been accepted");
+    }
+
     const user = req.user;
 
     const job = await Job.findByIdAndUpdate(ticket.job, {
@@ -240,6 +237,7 @@ exports.acceptJobTicket = async (req, res) => {
 
     ticket.status = "accepted";
     await ticket.save();
+    sendSuccess(res, "Job has started", {}, 201);
 
     await notificationQueue.add({
       type: QueueJobTypes.JOB_STARTED,
@@ -249,8 +247,6 @@ exports.acceptJobTicket = async (req, res) => {
         jobId: job?._id,
       },
     });
-
-    sendSuccess(res, "Job has started", {}, 201);
   } catch (err) {
     return sendError(res, err.message);
   }
@@ -262,27 +258,24 @@ exports.rejectJobTicket = async (req, res) => {
     if (!ticketId) {
       throw new Error("Ticket id is required");
     }
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+
+    if (ticket.status !== JobTicketStatus.assigned) {
+      throw new Error("Ticket is not in assigned status");
+    }
+
+    if (ticket.status === JobTicketStatus.rejected) {
+      throw new Error("Ticket has already been rejected");
+    }
+    if (ticket.status === JobTicketStatus.accepted) {
+      throw new Error("Ticket has already been accepted");
+    }
+
     await Ticket.findByIdAndUpdate(ticketId, { status: "rejected" });
     sendSuccess(res, "Job ticket rejected", {}, 201);
-
-    // sendAdminPushNotification(
-    //   "Job In Progress",
-    //   `${job?.customer?.name}'s job is now in progress. ${user?.name} has accepted the job ticket.`,
-    //   {
-    //     image: user?.profile_img,
-    //     redirect: `job/${job?._id}`,
-    //   }
-    // );
-
-    // sendPushNotification(
-    //   job?.customer,
-    //   `Your Job is Now in Progress`,
-    //   `Hi ${job?.customer?.name}, your job is now in progress. ${user?.name} has been assigned and will contact you shortly.`,
-    //   {
-    //     image: user?.profile_img,
-    //     redirect: `JobDetail_${job?._id}`,
-    //   }
-    // );
   } catch (err) {
     return sendError(res, err.message);
   }
