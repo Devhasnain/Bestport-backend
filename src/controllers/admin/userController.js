@@ -100,6 +100,28 @@ exports.getCustomers = async (req, res) => {
   }
 };
 
+exports.deleteCustomerById = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const user = await User.findById(id);
+
+    user.email = `deleted_user_${user.email}`;
+    user.is_deleted = true;
+    user.name = "UnKnown";
+
+    await user.save();
+
+    return sendSuccess(
+      res,
+      "User deleted successfully.",
+      {success:true},
+      201
+    );
+  } catch (err) {
+    return sendError(res, err.message);
+  }
+};
+
 exports.getUserById = async (req, res) => {
   try {
     const { id } = req.params;

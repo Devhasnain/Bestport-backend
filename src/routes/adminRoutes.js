@@ -11,6 +11,7 @@ const {
   editEmployee,
   getAllEmployeesList,
   updateProfile,
+  deleteCustomerById
 } = require("../controllers/admin/userController");
 const {
   getAllJobs,
@@ -32,6 +33,7 @@ router.get("/me", profile);
 router.get("/employees", getEmployees);
 router.get("/employees-list", getAllEmployeesList);
 router.get("/customers", getCustomers);
+router.delete("/customer/:id", deleteCustomerById);
 router.get("/user/:id", getUserById);
 router.get("/get-api-keys", getApiKeys);
 router.post("/create-api-key", createApiKey);
